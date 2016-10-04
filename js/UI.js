@@ -17,7 +17,7 @@ class UI {
 
         let container = document.createElement("div");
 
-        container.textContent = "hello!";
+        // container.textContent = "hello!";
 
         this.resourceDisplay = container;
 

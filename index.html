@@ -3,11 +3,11 @@
 
     <!-- Styles -->
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="/shared/scss/main.min.css">
+    <link rel="stylesheet" type="text/css" href="/scss/main.min.css">
 
     <!-- Vendor Scripts -->
-    <script src="/shared/js/vendor/eventemitter2.js"></script>
-    <script src="/shared/js/vendor/three.min.js"></script>
+    <script src="/js/vendor/eventemitter2.js"></script>
+    <script src="/js/vendor/three.min.js"></script>
 
 </head>
 <body>
@@ -15,32 +15,38 @@
     <canvas></canvas>
 
     <!-- Custom Scripts -->
-    <script src="/shared/js/Doodad.js"></script>
-    <script src="/shared/js/Destructible.js"></script>
-    <script src="/shared/js/Unit.js"></script>
 
-    <script src="/shared/js/destructibles/Tree.js"></script>
-    <script src="/shared/js/destructibles/Fence.js"></script>
-    <script src="/shared/js/destructibles/Granary.js"></script>
-    <script src="/shared/js/destructibles/BigFarm.js"></script>
-    <script src="/shared/js/destructibles/Inn.js"></script>
-    <script src="/shared/js/destructibles/Crates.js"></script>
+    <!-- Base Entity Types -->
+    <script src="/js/types/Doodad.js"></script>
+    <script src="/js/types/Destructible.js"></script>
+    <script src="/js/types/Unit.js"></script>
 
-    <script src="/shared/js/units/Sheep.js"></script>
+    <!-- Doodads -->
+    <script src="/js/types/doodads/Terrain.js"></script>
 
-    <script src="/shared/js/Terrain.js"></script>
-    <script src="/shared/js/Level.js"></script>
+    <!-- Destructibles -->
+    <script src="/js/types/destructibles/Tree.js"></script>
+    <script src="/js/types/destructibles/Fence.js"></script>
+    <script src="/js/types/destructibles/Granary.js"></script>
+    <script src="/js/types/destructibles/BigFarm.js"></script>
+    <script src="/js/types/destructibles/Inn.js"></script>
+    <script src="/js/types/destructibles/Crates.js"></script>
 
-    <script src="/shared/js/UI.js"></script>
+    <!-- Units -->
+    <script src="/js/types/units/Sheep.js"></script>
 
-    <script src="/shared/js/game.js"></script>
+    <!-- UI -->
+    <script src="/js/UI.js"></script>
 
-    <script src="/shared/js/levels.js"></script>
+    <!-- Driver/Bulldog code -->
+    <script src="/js/game/Level.js"></script>
+    <script src="/js/game/Game.js"></script>
+    <script src="/js/game/levels.js"></script>
 
-    <script src="/shared/js/graphic.js"></script>
-    <script src="/shared/js/ws.js"></script>
-    <script src="/shared/js/app.js"></script>
-
+    <!-- Globally Scoped Items -->
+    <script src="/js/graphic.js"></script>
+    <script src="/js/ws.js"></script>
+    <script src="/js/app.js"></script>
 
 </body>
 </html>

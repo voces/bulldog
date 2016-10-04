@@ -12,7 +12,7 @@ class Sheep extends Unit {
 
         super(props);
 
-        this.fetchModel("/shared/models/sheep.json", geo => {
+        this.fetchModel("/models/sheep.json", geo => {
 
             for (let i = 0; i < geo.faces.length; i++)
                 geo.faces[i].color.setHex(geo.faces[i].materialIndex === 0 ? 0xCCCCCC : 0x333333);

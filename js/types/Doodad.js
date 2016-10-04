@@ -29,7 +29,7 @@ class Doodad extends EventEmitter2 {
             this.animated = true;
 
             this.mesh = new THREE.SkinnedMesh(this.geometry, this.material);
-            
+
             this.mesh.material.skinning = true;
 
             this.mixer = new THREE.AnimationMixer(this.mesh);
@@ -81,7 +81,6 @@ class Doodad extends EventEmitter2 {
             this.constructor.model = geo;
 
             geo.rotateX(Math.PI / 2);
-            geo.rotateZ(Math.PI / 2);
 
             callback(geo);
 
