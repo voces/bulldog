@@ -35,6 +35,7 @@ class Game extends EventEmitter2 {
                 newIntersect.object.entity.emit("hoverOn", newIntersect);
         });
         this.app.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
+        this.app.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
 
     }
 

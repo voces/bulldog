@@ -109,7 +109,13 @@ new Level({
                 x:  14 * 8 + nudgeW,
                 y: -11 * 8 + nudgeH
             }
+        ], Sheep: [
+            {
+                x: -0.5 * 8 + nudgeW,
+                y: -0.5 * 8 + nudgeH
+            }
         ]
     }
 });
+console.log(nudgeW, nudgeH);
 }

@@ -43,6 +43,7 @@ class Level extends EventEmitter2 {
         Level.emit("new", this);
 
         Level.instances.push(this);
+
     }
 
     calcTileHeightMap(tileHeightMap) {

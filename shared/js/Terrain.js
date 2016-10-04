@@ -19,8 +19,8 @@ class Terrain extends Doodad {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
                 this.geometry.vertices[i].z = heightmap[i];
             }
-            this.geometry.vertices[i].x += 2 * Math.random();
-            this.geometry.vertices[i].y += 2 * Math.random();
+            // this.geometry.vertices[i].x += 2 * Math.random();
+            // this.geometry.vertices[i].y += 2 * Math.random();
         }
 
 
@@ -55,6 +55,8 @@ class Terrain extends Doodad {
 
         this.createMesh();
 
+        this.on("hover", intersect => console.log(intersect.point));
+
     }
 
     get wireframe() {
@@ -67,6 +69,8 @@ class Terrain extends Doodad {
 
         this._wireframe = new THREE.WireframeHelper(this.mesh, 0xffffff);
         this._wireframe.material.linewidth = 2;
+
+        this._wireframe.entity = this;
 
         return this._wireframe;
 

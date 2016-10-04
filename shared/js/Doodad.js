@@ -25,7 +25,31 @@ class Doodad extends EventEmitter2 {
                 shading: THREE.FlatShading
             });
 
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        // this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+        if (this.geometry.animations) {
+            this.animated = true;
+
+            this.mesh = new THREE.SkinnedMesh(this.geometry, this.material);
+
+            this.mesh.material.skinning = true;
+
+            this.mixer = new THREE.AnimationMixer(this.mesh);
+
+            this.animations = {};
+
+            for (let i = 0; i < this.geometry.animations.length; i++) {
+                let animation = this.geometry.animations[i];
+
+                this.animations[animation.name] = animation;
+                this.mixer.clipAction(animation);
+
+                animation.play = weight => this.animate(animation.name, weight);
+            }
+
+            this.animate("walk");
+
+        } else this.mesh = new THREE.Mesh(this.geometry, this.material);
 
         this.mesh.castShadow = true;
         this.mesh.receiveShadow = true;
@@ -50,6 +74,47 @@ class Doodad extends EventEmitter2 {
     }
 
     get y() { return this._y; }
+
+    fetchModel(path, callback) {
+        if (this.constructor.model) return callback(this.constructor.model);
+
+        loader.load(path, geo => {
+
+            this.constructor.model = geo;
+
+            callback(geo);
+
+        })
+    }
+
+    animate(animation, weight = 1) {
+
+        // if (!this.animations || !this.animations[animation]) return;
+
+        // this.mixer.clipAction(this.animations[animation]).setDuration(1).play();
+
+        let remaining = 1 - weight;
+
+        console.log("play", animation, weight);
+
+        for (let i = 0; i < this.geometry.animations.length; i++) {
+            this.mixer.clipAction(this.geometry.animations[i].name).setEffectiveWeight(remaining);
+        }
+
+        this.mixer.clipAction(animation).setEffectiveWeight(weight).play();
+
+        for (let i = 0; i < this.geometry.animations.length; i++) {
+            console.log(this.geometry.animations[i].name, this.mixer.clipAction(this.geometry.animations[i].name).getEffectiveWeight());
+        }
+
+    }
+
+    setAnimationSpeed(animation, speed) {
+
+        this.mixer.clipAction(animation).setEffectiveTimeScale(7);
+
+    }
+
 }
 
 Doodad.id = 0;
