@@ -19,8 +19,8 @@ class Terrain extends Doodad {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
                 this.geometry.vertices[i].z = heightmap[i];
             }
-            // this.geometry.vertices[i].x += 2 * Math.random();
-            // this.geometry.vertices[i].y += 2 * Math.random();
+            this.geometry.vertices[i].x += 2 * Math.random();
+            this.geometry.vertices[i].y += 2 * Math.random();
         }
 
 
@@ -55,7 +55,7 @@ class Terrain extends Doodad {
 
         this.createMesh();
 
-        this.on("hover", intersect => console.log(intersect.point));
+        // this.on("hover", intersect => console.log(intersect.point));
 
     }
 
@@ -63,12 +63,10 @@ class Terrain extends Doodad {
 
         if (typeof this._wireframe !== "undefined") return this._wireframe;
 
-        this.mesh.polygonOffset = true;
-        this.mesh.polygonOffsetFactor = 1;
-        this.mesh.polygonOffsetUnits = 1;
+        let geometry = new THREE.EdgesGeometry(this.mesh.geometry),
+            material = new THREE.LineBasicMaterial();
 
-        this._wireframe = new THREE.WireframeHelper(this.mesh, 0xffffff);
-        this._wireframe.material.linewidth = 2;
+        this._wireframe = new THREE.LineSegments(geometry, material);
 
         this._wireframe.entity = this;
 

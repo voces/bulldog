@@ -29,20 +29,8 @@ class App extends EventEmitter2 {
         if (entity.mesh) {
             graphic.scene.add(entity.mesh);
 
-            if (entity.animated) graphic.updates.push((delta) => {
-                // console.log(delta/1000);
-                // entity.mixer.update(delta/1000)
-                entity.mixer.update(delta)
-            });
+            if (entity.animated) graphic.updates.push((delta) => entity.mixer.update(delta));
 
-            //     graphic.updates.push(entity.mixer.update);
-            //     setTimeout(() => {
-            //         graphic.updates.pop();
-            //     }, 10);
-            // }
-
-            if (entity instanceof Terrain)
-                graphic.scene.add(entity.wireframe);
         }
 
     }

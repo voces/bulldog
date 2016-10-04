@@ -10,8 +10,8 @@ class Doodad extends EventEmitter2 {
         this.x = props.x || 0;
         this.y = props.y || 0;
 
-        this.on("hoverOn", intercept => console.log("hoverOn", this.constructor.name, this.id));
-        this.on("hoverOff", intercept => console.log("hoverOff", this.constructor.name,  this.id));
+        // this.on("hoverOn", intercept => console.log("hoverOn", this.constructor.name, this.id));
+        // this.on("hoverOff", intercept => console.log("hoverOff", this.constructor.name,  this.id));
         // this.on("hoverFace", intercept => console.log("hoverFace", this.constructor.name));
     }
 
@@ -25,13 +25,11 @@ class Doodad extends EventEmitter2 {
                 shading: THREE.FlatShading
             });
 
-        // this.mesh = new THREE.Mesh(this.geometry, this.material);
-
         if (this.geometry.animations) {
             this.animated = true;
 
             this.mesh = new THREE.SkinnedMesh(this.geometry, this.material);
-
+            
             this.mesh.material.skinning = true;
 
             this.mixer = new THREE.AnimationMixer(this.mesh);
@@ -47,7 +45,7 @@ class Doodad extends EventEmitter2 {
                 animation.play = weight => this.animate(animation.name, weight);
             }
 
-            this.animate("walk");
+            // this.animate("walk");
 
         } else this.mesh = new THREE.Mesh(this.geometry, this.material);
 
@@ -82,6 +80,9 @@ class Doodad extends EventEmitter2 {
 
             this.constructor.model = geo;
 
+            geo.rotateX(Math.PI / 2);
+            geo.rotateZ(Math.PI / 2);
+
             callback(geo);
 
         })
@@ -89,29 +90,24 @@ class Doodad extends EventEmitter2 {
 
     animate(animation, weight = 1) {
 
-        // if (!this.animations || !this.animations[animation]) return;
-
-        // this.mixer.clipAction(this.animations[animation]).setDuration(1).play();
-
         let remaining = 1 - weight;
 
-        console.log("play", animation, weight);
-
-        for (let i = 0; i < this.geometry.animations.length; i++) {
-            this.mixer.clipAction(this.geometry.animations[i].name).setEffectiveWeight(remaining);
-        }
+        for (let i = 0; i < this.animations.length; i++)
+            this.mixer.clipAction(this.animations[i].name).setEffectiveWeight(remaining);
 
         this.mixer.clipAction(animation).setEffectiveWeight(weight).play();
-
-        for (let i = 0; i < this.geometry.animations.length; i++) {
-            console.log(this.geometry.animations[i].name, this.mixer.clipAction(this.geometry.animations[i].name).getEffectiveWeight());
-        }
 
     }
 
     setAnimationSpeed(animation, speed) {
 
         this.mixer.clipAction(animation).setEffectiveTimeScale(7);
+
+    }
+
+    update(delta) {
+
+        if (this.mixer) this.mixer.update(delta);
 
     }
 

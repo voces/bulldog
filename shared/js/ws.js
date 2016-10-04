@@ -22,12 +22,12 @@
 
     onMessage(message) {
         message = JSON.parse(message.data);
-        console.log("RESV", message);
+        // console.log("RESV", message);
         this.emit("message", message);
     }
 
     send(message) {
-        console.log("SEND", message);
+        // console.log("SEND", message);
         this.socket.send(JSON.parse(message));
     }
 

@@ -117,5 +117,4 @@ new Level({
         ]
     }
 });
-console.log(nudgeW, nudgeH);
 }
