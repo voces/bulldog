@@ -22,6 +22,7 @@ class Sheep extends Unit {
             this.createMesh();
 
             this.setAnimationSpeed("walk", 7);
+            // this.animate("walk");
 
         });
 

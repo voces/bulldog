@@ -1,16 +1,4 @@
 
-{function emitterMixin(obj) {
-
-    let emitter = new EventEmitter2();
-
-    for (let prop in emitter)
-        obj[prop] = emitter[prop];
-
-    for (let prop in emitter.constructor.prototype)
-        obj[prop] = emitter.constructor.prototype[prop];
-
-}
-
 class Level extends EventEmitter2 {
     constructor(props) {
         super();
@@ -19,6 +7,8 @@ class Level extends EventEmitter2 {
             height: 12,
             width: 16
         };
+
+        this.tileMap = {};
 
         if (props.tileHeightMap) this.calcTileHeightMap(props.tileHeightMap);
 
@@ -98,36 +88,40 @@ class Level extends EventEmitter2 {
 
         for (let y = 0; y < h; y++)
             for (let x = 0; x < w; x++)
-                if (this.heightMap[y*w+x] === this.heightMap[y*w+x+1] && this.heightMap[y*w+w+x] === this.heightMap[y*w+w+x+1] && Math.abs(this.heightMap[y*w+x] - this.heightMap[y*w+w+x]) <= 4 || this.heightMap[y*w+x] === this.heightMap[y*w+w+x] && this.heightMap[y*w+x+1] === this.heightMap[y*w+w+x+1] && Math.abs(this.heightMap[y*w+x] - this.heightMap[y*w+x+1]) <= 4)
+                if (this.heightMap[y*w+x] === this.heightMap[y*w+x+1] && this.heightMap[y*w+w+x] === this.heightMap[y*w+w+x+1] && Math.abs(this.heightMap[y*w+x] - this.heightMap[y*w+w+x]) <= 4 || this.heightMap[y*w+x] === this.heightMap[y*w+w+x] && this.heightMap[y*w+x+1] === this.heightMap[y*w+w+x+1] && Math.abs(this.heightMap[y*w+x] - this.heightMap[y*w+x+1]) <= 4) {
 
+                    this.tileMap[`${x},${y}`] = 3;
                     this.colors[y*(w-1)+x] = 0x6EF462;
+
+                } else this.tileMap[`${x},${y}`] = 0;
 
         for (let i = 0; i < this.heightMap.length; i++)
             this.heightMap[i] += 1*Math.random();
 
     }
 
-    adjustSubTileColor(i, h, s, l) {
+    adjustSubTile(x, y, tileType, i, h, s, l) {
+        this.tileMap[`${x},${y}`] = tileType;
         this.colors[i] = new THREE.Color(this.colors[i]).offsetHSL(h, s, l).getHex();
     }
 
-    adjustSubTilesColor(x, y, hue, s, l) {
+    adjustSubTiles(x, y, tileType, hue, s, l) {
 
         let w = this.dimensions.width * 2 + 1,
             h = this.dimensions.height * 2 + 1;
 
-        this.adjustSubTileColor(y*(w-1)+x, hue, s, l);
-        this.adjustSubTileColor(y*(w-1)+x-1, hue, s, l);
-        this.adjustSubTileColor((y-1)*(w-1)+x, hue, s, l);
-        this.adjustSubTileColor((y-1)*(w-1)+x-1, hue, s, l);
+        this.adjustSubTile(x, y, tileType, y*(w-1)+x, hue, s, l);
+        this.adjustSubTile(x-1, y, tileType, y*(w-1)+x-1, hue, s, l);
+        this.adjustSubTile(x, y-1, tileType, (y-1)*(w-1)+x, hue, s, l);
+        this.adjustSubTile(x-1, y-1, tileType, (y-1)*(w-1)+x-1, hue, s, l);
 
     }
 
-    adjustTileColor(x, y, color) {
+    adjustTile(x, y, tileType) {
 
-        switch (color) {
-            case 1: this.adjustSubTilesColor(x, y, 0, -0.2, -0.2); break;
-            case 2: this.adjustSubTilesColor(x, y, 0, 0.2, 0.2); break;
+        switch (tileType) {
+            case 1: this.adjustSubTiles(x, y, tileType, 0, -0.2, -0.2); break;
+            case 2: this.adjustSubTiles(x, y, tileType, 0, 0.2, 0.2); break;
         }
 
     }
@@ -145,7 +139,7 @@ class Level extends EventEmitter2 {
             let x = i*2 % (w+1),
                 y = Math.floor(i*2/(w+1))*2;
 
-            this.adjustTileColor(x, y, tileMap[i]);
+            this.adjustTile(x, y, tileMap[i]);
 
         }
 
@@ -158,7 +152,8 @@ class Level extends EventEmitter2 {
             this.dimensions.height,
             this.orientation,
             this.heightMap,
-            this.colors);
+            this.colors,
+            this.tileMap);
 
     }
 }
@@ -167,12 +162,4 @@ emitterMixin(Level);
 
 Level.instances = [];
 
-// Level.on("new", instance => console.log("new", instance));
-
-window.Level = Level;}
-
-
-
-// Level.constructor.prototype = new EventEmitter2();
-
-// EventEmitter2.call(Level);
+window.Level = Level;

@@ -57,6 +57,8 @@ class Doodad extends EventEmitter2 {
         this.x = this.x;
         this.y = this.y;
 
+        Doodad.emit("new", this);
+
     }
 
     set x(value) {
@@ -113,3 +115,5 @@ class Doodad extends EventEmitter2 {
 }
 
 Doodad.id = 0;
+
+emitterMixin(Doodad);

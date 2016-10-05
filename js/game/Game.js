@@ -12,21 +12,36 @@ class Game extends EventEmitter2 {
         // Level.on("new", level => this.levels.push(level));
         // Level.on("new", () => console.log("level"));
 
-        let ui = new UI();
+        this.ui = new UI();
 
-        ui.showResourceDisplay();
+        this.ui.showResourceDisplay();
+
+        this.players = [];
+        this.host = null;
+
+        this.settings = {
+            auto: true,             //Game is being auto run (no host)
+            sheep: 1,
+            farmLimit: 300,
+            view: true,
+            random: true,           //Only matters if NOT auto; whether teams are random
+            sheepStartingGold: 100,
+            wolfStartingGold: 100,
+            income: 1,              //Ticker length in seconds (i.e., 1 resource every x seconds)
+            stack: true,            //Are stacks enabled?
+            timeLimit: 120,
+            arena: 0
+        };
 
         this.initAppListeners();
+
+        Doodad.on("new", entity => this.round ? this.emit("newEntity", entity) : null);
 
     }
 
     initAppListeners() {
 
-        this.app.on("message", message => {switch (message.eid) {
-
-            case "connected": this.connected(message.partySize); break;
-
-        }});
+        this.app.on("message", message => this.messageSwitcher(message));
 
         this.app.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
         this.app.on("hoverOff", (oldIntersect, newIntersect) => {
@@ -36,6 +51,20 @@ class Game extends EventEmitter2 {
         });
         this.app.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
         this.app.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
+
+    }
+
+    messageSwitcher(message) {
+
+        if (message.origin === -1)
+            switch (message.eid) {
+                case "connected": this.connected(message.clientId, message.state, message.party); break;
+            }
+
+        // else
+        //     switch (message.eid) {
+        //
+        //     }
 
     }
 
@@ -52,14 +81,29 @@ class Game extends EventEmitter2 {
 
     start() {
 
+        // this.emit("clean");
 
-
-
+        this.round = true;
+        this.round = new Round(this);
 
     }
 
-    connected(partySize) {
-        if (partySize === 1) this.showLevel(0);
+    connected(myId, state, party) {
+
+        this.showLevel(state.level);
+
+        this.rng = new RNG(state.seed);
+
+        for (let i = 0; i < party.length; i++)
+            this.players.push(new Player(party[i], state));
+
+        this.self = new Player({id: myId}, state);
+        this.players.push(this.self);
+
+        //Just me
+        if (this.players.length === 1)
+            this.start();
+
     }
 
 }

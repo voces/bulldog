@@ -4,10 +4,18 @@ function faceToVertices(mesh, face) {
 }
 
 class Terrain extends Doodad {
-    constructor(width, height, orientation=[], heightmap=[], colors=[]) {
+    constructor(width, height, orientation=[], heightmap=[], colors=[], tileMap=[]) {
         super();
 
-        this.geometry = new THREE.PlaneGeometry(width*16, height*16, width*2, height*2);
+        this.width = width*16;
+        this.height = height*16;
+
+        this.minX = this.width / -2;
+        this.maxX = this.width / 2;
+        this.minY = this.height / -2;
+        this.maxY = this.height / 2;
+
+        this.geometry = new THREE.PlaneGeometry(this.width, this.height, width*2, height*2);
         // for (let i = 0; i < this.geometry.faces.length; i++)
         //     this.geometry.faces[i].color.setHex(0xF4A460);
 
@@ -19,8 +27,8 @@ class Terrain extends Doodad {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
                 this.geometry.vertices[i].z = heightmap[i];
             }
-            this.geometry.vertices[i].x += 2 * Math.random();
-            this.geometry.vertices[i].y += 2 * Math.random();
+            // this.geometry.vertices[i].x += 2 * Math.random();
+            // this.geometry.vertices[i].y += 2 * Math.random();
         }
 
 
@@ -53,9 +61,13 @@ class Terrain extends Doodad {
             }
         }
 
+        this.tileMap = tileMap;
+
         this.createMesh();
 
-        // this.on("hover", intersect => console.log(intersect.point));
+        // this.on("hover", intersect => {
+        //     console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
+        // });
 
     }
 
@@ -72,5 +84,13 @@ class Terrain extends Doodad {
 
         return this._wireframe;
 
+    }
+
+    getTile(x, y) {
+        x = Math.floor((x + this.width / 2) / 8);
+        y = this.height / 8 - Math.floor((y + this.height / 2) / 8) - 1;
+
+        let tile = this.tileMap[`${x},${y}`];
+        return tile === undefined ? -1 : tile;
     }
 }
