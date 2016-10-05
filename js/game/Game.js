@@ -13,8 +13,10 @@ class Game extends EventEmitter2 {
         // Level.on("new", () => console.log("level"));
 
         this.ui = new UI();
+        // this.ui.currency = 12;
 
         this.ui.showResourceDisplay();
+        this.ui.showCommandDeck();
 
         this.players = [];
         this.host = null;
@@ -36,6 +38,9 @@ class Game extends EventEmitter2 {
         this.initAppListeners();
 
         Doodad.on("new", entity => this.round ? this.emit("newEntity", entity) : null);
+
+        Unit.on("hoverOn", () => this.ui.enablePointerCursor());
+        Unit.on("hoverOff", () => this.ui.disablePointerCursor());
 
     }
 
@@ -97,8 +102,9 @@ class Game extends EventEmitter2 {
         for (let i = 0; i < party.length; i++)
             this.players.push(new Player(party[i], state));
 
-        this.self = new Player({id: myId}, state);
-        this.players.push(this.self);
+        this.localPlayer = new Player({id: myId, isLocalPlayer: true}, state);
+        this.players.push(this.localPlayer);
+        this.localPlayer.on("currency", value => this.ui.currency = value);
 
         //Just me
         if (this.players.length === 1)

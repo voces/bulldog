@@ -27,12 +27,16 @@ class Round extends EventEmitter2 {
 
         this.pickTeams();
 
+        this.playerActions();
+
         // console.log(this.sheepTeam, this.wolfTeam);
 
-        this.spawnSheep();
-        this.spawnWolves();
+        // this.spawnSheep();
+        // this.spawnWolves();
 
         this.wolfTimer = setTimeout(() => this.unfreezeWolves(), this.settings.freezeTime);
+
+        this.incomeTicker = setInterval(() => this.income(), this.settings.income * 1000);
 
     }
 
@@ -61,9 +65,11 @@ class Round extends EventEmitter2 {
 
     }
 
-    spawnSheep() {
+    playerActions() {
 
         for (let i = 0; i < this.sheepTeam.length; i++) {
+
+            this.sheepTeam[i].currency = this.settings.sheepStartingGold;
 
             let maxTries = 1000;
 
@@ -84,7 +90,6 @@ class Round extends EventEmitter2 {
             if (maxTries === 0) console.error("Stage appears to be missing spawn area");
 
         }
-            // new Sheep({owner: this.sheepTeam[i]})
 
     }
 
@@ -107,6 +112,13 @@ class Round extends EventEmitter2 {
         if (playerCount % 2 === 0) return equalChance(half+1, half, half-1);
 
         return equalChance(half+1, half);
+
+    }
+
+    income() {
+
+        for (let i = 0; i < this.players.length; i++)
+            this.players[i].currency++;
 
     }
 

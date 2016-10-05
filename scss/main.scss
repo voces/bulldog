@@ -14,3 +14,65 @@ canvas {
     right: 0;
     z-index: -1;
 }
+
+.game {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    overflow: hidden;
+
+    .resources {
+
+        position: absolute;
+        right: 0;
+
+        img {
+            position: absolute;
+            right: 1em;
+            top: 1em;
+            max-width: 2.5em;
+            max-height: 2.5em;
+        }
+
+        span {
+            position: absolute;
+            right: 2.5em;
+            top: 0.9em;
+            text-align: right;
+            font-size: 1.5em;
+            color: #008FBB;
+        }
+
+    }
+
+    .command-deck {
+
+        position: absolute;
+        right: 11em;
+        bottom: 6em;
+
+        .command-card {
+
+            position: absolute;
+
+            img {
+                max-width: 2.5em;
+                max-height: 2.5em;
+            }
+
+            span {
+                position: absolute;
+                z-index: 2;
+                left: 2.5em;
+                top: 1.8em;
+                font-size: 0.7em;
+            }
+
+        }
+
+    }
+
+}

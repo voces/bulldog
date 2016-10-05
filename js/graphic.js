@@ -73,6 +73,7 @@
         window.addEventListener("resize", () => this.onResize())
         document.addEventListener("mousemove", e => this.onMouseMove(e))
         document.addEventListener("mousedown", e => this.onMouseDown(e))
+        document.addEventListener("mouseup", e => this.onMouseUp(e))
 
         this.lastTime = null;
 
@@ -98,10 +99,17 @@
 
     onMouseDown(e) {
 
-        // if (!(e.target.class instanceof UIView)) return;
         if (e.target.constructor !== HTMLCanvasElement) return;
 
         if (this.lastIntersect) this.emit("mouseDown", this.lastIntersect);
+
+    }
+
+    onMouseUp(e) {
+
+        if (e.target.constructor !== HTMLCanvasElement) return;
+
+        if (this.lastIntersect) this.emit("mouseUp", this.lastIntersect);
 
     }
 

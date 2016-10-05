@@ -10,16 +10,27 @@ class Player extends EventEmitter2 {
         for (let prop in state)
             this[prop] = state[prop];
 
+        if (typeof this.state === "undefined") this.state = {};
+
         //Check the game state for more info (this is player-controlled via sync statements)
         if (gameState.players)
             for (let i = 0; i < gameState.players.length; i++)
                 if (gameState.players.id === this.id) {
 
                     for (let prop in gameState.players[i])
-                        this[prop] = gameState.players[i][prop];
+                        this.state[prop] = gameState.players[i][prop];
 
                     break;
                 }
 
+        this._currency = 0;
+
+    }
+
+    get currency() { return this._currency; }
+    set currency(value) {
+        this._currency = value;
+
+        if (this.isLocalPlayer) this.emit("currency", value);
     }
 }
