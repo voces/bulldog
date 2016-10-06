@@ -22,6 +22,9 @@ class Terrain extends Doodad {
         // console.log(this.geometry.vertices, this.geometry.faces);
         // console.log(this.geometry.vertices.length, this.geometry.faces.length);
         // console.log(orientation.length, heightmap.length);
+
+        this.tilemap = new Tilemap(width*2, height*2, this.geometry.vertices, orientation, tileMap);
+
         for (let i = 0; i < heightmap.length && i < this.geometry.vertices.length; i++) {
             if (heightmap[i]) {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
@@ -61,7 +64,7 @@ class Terrain extends Doodad {
             }
         }
 
-        this.tileMap = tileMap;
+        this.simpleTileMap = tileMap;
 
         this.createMesh();
 
@@ -90,7 +93,7 @@ class Terrain extends Doodad {
         x = Math.floor((x + this.width / 2) / 8);
         y = this.height / 8 - Math.floor((y + this.height / 2) / 8) - 1;
 
-        let tile = this.tileMap[`${x},${y}`];
+        let tile = this.simpleTileMap[`${x},${y}`];
         return tile === undefined ? -1 : tile;
     }
 }

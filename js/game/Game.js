@@ -37,7 +37,7 @@ class Game extends EventEmitter2 {
 
         this.initAppListeners();
 
-        Doodad.on("new", entity => this.round ? this.emit("newEntity", entity) : null);
+        Doodad.on("new", entity => this.round ? this.emit("showEntity", entity) : null);
 
         Unit.on("hoverOn", () => this.ui.enablePointerCursor());
         Unit.on("hoverOff", () => this.ui.disablePointerCursor());
@@ -66,11 +66,6 @@ class Game extends EventEmitter2 {
                 case "connected": this.connected(message.clientId, message.state, message.party); break;
             }
 
-        // else
-        //     switch (message.eid) {
-        //
-        //     }
-
     }
 
     showLevel(i) {
@@ -78,9 +73,9 @@ class Game extends EventEmitter2 {
         this.level = i % this.levels.length;
 
         this.emit("clean");
-        this.emit("newEntity", this.levels[this.level].terrain);
+        this.emit("showEntity", this.levels[this.level].terrain);
         for (let i = 0; i < this.levels[this.level].entities.length; i++)
-            this.emit("newEntity", this.levels[this.level].entities[i]);
+            this.emit("showEntity", this.levels[this.level].entities[i]);
 
     }
 

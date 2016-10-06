@@ -73,6 +73,16 @@ canvas {
 
         }
 
+        .command-card:hover {
+
+            cursor: pointer;
+
+            span {
+                font-weight: bold;
+            }
+
+        }
+
     }
 
 }

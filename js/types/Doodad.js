@@ -10,6 +10,9 @@ class Doodad extends EventEmitter2 {
         this.x = props.x || 0;
         this.y = props.y || 0;
 
+        this._scale = 1;
+        this._size = 1;
+
         // this.on("hoverOn", intercept => console.log("hoverOn", this.constructor.name, this.id));
         // this.on("hoverOff", intercept => console.log("hoverOff", this.constructor.name,  this.id));
         // this.on("hoverFace", intercept => console.log("hoverFace", this.constructor.name));
@@ -60,6 +63,20 @@ class Doodad extends EventEmitter2 {
         Doodad.emit("new", this);
 
     }
+
+    registerMesh() {
+
+        this.mesh.entity = this;
+
+        this.x = this.x;
+        this.y = this.y;
+
+        Doodad.emit("new", this);
+
+    }
+
+    get size() { return this._size; }
+    get scale() { return this._scale; }
 
     set x(value) {
         this._x = value;

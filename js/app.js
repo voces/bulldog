@@ -18,19 +18,36 @@ class App extends EventEmitter2 {
 
         this.game = new Game(this);
 
-        this.game.on("newEntity", entity => this.newEntity(entity));
+        this.game.on("showEntity", entity => this.showEntity(entity));
+        this.game.on("hideEntity", entity => this.hideEntity(entity));
 
     }
 
-    newEntity(entity) {
+    showEntity(entity) {
         this.entityArray.push(entity);
         this.entityMap.set(entity.id, entity);
 
         if (entity.mesh) {
             graphic.scene.add(entity.mesh);
 
-            if (entity.animated) graphic.updates.push((delta) => entity.mixer.update(delta));
+            entity.mixerProxy = (delta) => entity.mixer.update(delta);
 
+            if (entity.mixer) graphic.updates.push(entity.mixerProxy);
+
+        }
+
+    }
+
+    hideEntity(entity) {
+
+        this.entityArray.splice(this.entityArray.indexOf(entity), 1);
+        this.entityMap.delete(entity.id);
+
+        if (entity.mesh) {
+            graphic.scene.remove(entity.mesh);
+
+            if (entity.mixer)
+                graphic.updates.splice(graphic.upgrades.indexOf(entity.mixerProxy), 1);
         }
 
     }
