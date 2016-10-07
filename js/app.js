@@ -7,7 +7,7 @@ class App extends EventEmitter2 {
         this.entityArray = [];
         this.entityMap = new Map();
 
-        this.animatedEntities = [];
+        this.activeEntities = [];
 
         ws.on("message", message => this.emit("message", message));
 
@@ -21,6 +21,11 @@ class App extends EventEmitter2 {
         this.game.on("showEntity", entity => this.showEntity(entity));
         this.game.on("hideEntity", entity => this.hideEntity(entity));
 
+        this.game.on("activeEntity", entity => this.activeEntity(entity));
+        this.game.on("inactiveEntity", entity => this.inactiveEntity(entity));
+
+        graphic.updates.push(this);
+
     }
 
     showEntity(entity) {
@@ -30,9 +35,11 @@ class App extends EventEmitter2 {
         if (entity.mesh) {
             graphic.scene.add(entity.mesh);
 
-            entity.mixerProxy = (delta) => entity.mixer.update(delta);
+            // entity.mixerProxy = (delta) => entity.mixer.update(delta);
 
-            if (entity.mixer) graphic.updates.push(entity.mixerProxy);
+            // if (entity.active) {
+            //     graphic.updates.push(entity.mixerProxy)
+            // }
 
         }
 
@@ -50,6 +57,20 @@ class App extends EventEmitter2 {
                 graphic.updates.splice(graphic.upgrades.indexOf(entity.mixerProxy), 1);
         }
 
+    }
+
+    activeEntity(entity) {
+
+
+
+    }
+
+    inactiveEntity(entity) {
+
+    }
+
+    update(delta) {
+        this.emit("update", delta);
     }
 
 }

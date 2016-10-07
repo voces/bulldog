@@ -4,7 +4,7 @@ class Granary extends Destructible {
 
         let O = FOOTPRINT_TYPE.OBSTACLE;
 
-        props.footprint = {
+        props.structure = {
             map: [
                 O,O,O,O,
                 O,O,O,O,
@@ -23,7 +23,7 @@ class Granary extends Destructible {
         this.createChute();
 
         this.geometry.mergeVertices();
-        
+
         this.geometry.translate(-6, 0, 0);
         this.geometry.scale(0.8, 0.8, 0.8);
 

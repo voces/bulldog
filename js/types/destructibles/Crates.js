@@ -2,7 +2,7 @@
 class Crates extends Destructible {
     constructor(props = {}) {
 
-        props.footprint = {
+        props.structure = {
             map: [FOOTPRINT_TYPE.OBSTACLE],
             width: 1,
             height: 1,

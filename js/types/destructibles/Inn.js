@@ -5,7 +5,7 @@ class Inn extends Destructible {
         let O = FOOTPRINT_TYPE.OBSTACLE,
             G = FOOTPRINT_TYPE.GROUND;
 
-        props.footprint = {
+        props.structure = {
             map: [
                 G,O,O,G,G,
                 O,O,O,O,G,

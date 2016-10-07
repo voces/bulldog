@@ -7,6 +7,7 @@ class Unit extends Destructible {
 
         this.on("hoverOn", intersect => this.onHoverOn(intersect));
         this.on("hoverOff", intersect => this.onHoverOff(intersect));
+        // this.on("mouseDown")
 
     }
 
@@ -42,12 +43,13 @@ class Unit extends Destructible {
 
     showSelectionCircle(rgb) {
 
+        if (rgb && rgb !== this.selectionCircle.color.getHex())
+            this.selectionCircle.color = new THREE.Color(rgb);
+
         if (this.selectionCircle.shown) return;
         this.selectionCircle.shown = true;
 
-        if (rgb) this._selectionCircle.color = new THREE.Color(rgb);
-
-        app.game.emit("showEntity", this._selectionCircle);
+        app.game.emit("showEntity", this.selectionCircle);
 
     }
 
@@ -56,7 +58,7 @@ class Unit extends Destructible {
         if (!this.selectionCircle.shown) return;
         this.selectionCircle.shown = false;
 
-        app.game.emit("hideEntity", this._selectionCircle);
+        app.game.emit("hideEntity", this.selectionCircle);
 
     }
 

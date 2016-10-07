@@ -4,7 +4,7 @@ class BigFarm extends Destructible {
 
         let O = FOOTPRINT_TYPE.OBSTACLE;
 
-        props.footprint = {
+        props.structure = {
             map: [
                 O,O,O,
                 O,O,O,

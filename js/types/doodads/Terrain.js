@@ -23,8 +23,6 @@ class Terrain extends Doodad {
         // console.log(this.geometry.vertices.length, this.geometry.faces.length);
         // console.log(orientation.length, heightmap.length);
 
-        this.tilemap = new Tilemap(width*2, height*2, this.geometry.vertices, orientation, tileMap);
-
         for (let i = 0; i < heightmap.length && i < this.geometry.vertices.length; i++) {
             if (heightmap[i]) {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
@@ -33,7 +31,6 @@ class Terrain extends Doodad {
             this.geometry.vertices[i].x += 2 * Math.random();
             this.geometry.vertices[i].y += 2 * Math.random();
         }
-
 
         //Rotate some squares (makes stuff look a bit less uniform)
         for (let i = 0; i < this.geometry.faces.length/2; i++)
@@ -50,6 +47,8 @@ class Terrain extends Doodad {
                 this.geometry.faces[i*2].c = this.geometry.faces[i*2+1].b;
                 this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
             }
+
+        this.tilemap = new Tilemap(width*2, height*2, this.geometry, orientation, tileMap);
 
         this.geometry.computeFaceNormals();
         this.geometry.computeVertexNormals();
@@ -97,6 +96,12 @@ class Terrain extends Doodad {
 
         let tile = this.simpleTileMap[`${x},${y}`];
         return tile === undefined ? -1 : tile;
+    }
+
+    height(x, y) {
+
+
+
     }
 
     minHeight(x, y, radius = 0) {

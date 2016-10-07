@@ -1,11 +1,11 @@
 
 class Tile {
-    constructor(x, y, pathing, vertices) {
-
+    constructor(x, y, pathing, vertices, faces) {
         this.x = x;
         this.y = y;
         this.pathing = pathing;
         this.vertices = vertices;
+        this.faces = faces;
 
     }
 

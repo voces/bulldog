@@ -5,7 +5,7 @@ class Fence extends Destructible {
         let orientation = props.orientation || (Math.random() < 0.5 ? "horizontal" : "vertical"),
             length = props.length || Math.floor(Math.random() * 2) * 2 + 2;
 
-        props.footprint = {
+        props.structure = {
             map: Array(length).fill(FOOTPRINT_TYPE.OBSTACLE),
             width: orientation === "horizontal" ? length : 1,
             height: orientation === "horizontal" ? 1 : length,

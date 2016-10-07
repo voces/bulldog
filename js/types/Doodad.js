@@ -9,13 +9,14 @@ class Doodad extends EventEmitter2 {
 
         this.x = props.x || 0;
         this.y = props.y || 0;
+        this.height = props.height || 0;
 
         this._scale = 1;
         this._size = 1;
 
-        // this.on("hoverOn", intercept => console.log("hoverOn", this.constructor.name, this.id));
-        // this.on("hoverOff", intercept => console.log("hoverOff", this.constructor.name,  this.id));
-        // this.on("hoverFace", intercept => console.log("hoverFace", this.constructor.name));
+        this.behaviors = [];
+        this.activeBehaviors = [];
+
     }
 
     createMesh(args = {}) {
@@ -28,29 +29,8 @@ class Doodad extends EventEmitter2 {
                 shading: THREE.FlatShading
             });
 
-        if (this.geometry.animations) {
-            this.animated = true;
-
-            this.mesh = new THREE.SkinnedMesh(this.geometry, this.material);
-
-            this.mesh.material.skinning = true;
-
-            this.mixer = new THREE.AnimationMixer(this.mesh);
-
-            this.animations = {};
-
-            for (let i = 0; i < this.geometry.animations.length; i++) {
-                let animation = this.geometry.animations[i];
-
-                this.animations[animation.name] = animation;
-                this.mixer.clipAction(animation);
-
-                animation.play = weight => this.animate(animation.name, weight);
-            }
-
-            // this.animate("walk");
-
-        } else this.mesh = new THREE.Mesh(this.geometry, this.material);
+        if (this.geometry.animations) new Animated({entity: this});
+        else this.mesh = new THREE.Mesh(this.geometry, this.material);
 
         this.mesh.castShadow = true;
         this.mesh.receiveShadow = true;
@@ -59,6 +39,7 @@ class Doodad extends EventEmitter2 {
 
         this.x = this.x;
         this.y = this.y;
+        // this.mesh.position.z = app.game.round.arena.
 
         Doodad.emit("new", this);
 
@@ -92,6 +73,8 @@ class Doodad extends EventEmitter2 {
 
     get y() { return this._y; }
 
+    get z() { return this.mesh.position.z; }
+
     fetchModel(path, callback) {
         if (this.constructor.model) return callback(this.constructor.model);
 
@@ -106,26 +89,10 @@ class Doodad extends EventEmitter2 {
         })
     }
 
-    animate(animation, weight = 1) {
-
-        let remaining = 1 - weight;
-
-        for (let i = 0; i < this.animations.length; i++)
-            this.mixer.clipAction(this.animations[i].name).setEffectiveWeight(remaining);
-
-        this.mixer.clipAction(animation).setEffectiveWeight(weight).play();
-
-    }
-
-    setAnimationSpeed(animation, speed) {
-
-        this.mixer.clipAction(animation).setEffectiveTimeScale(7);
-
-    }
-
     update(delta) {
 
-        if (this.mixer) this.mixer.update(delta);
+        for (let i = 0; i < this.activeBehaviors.length; i++)
+            this.activeBehaviors[i].update(delta);
 
     }
 

@@ -180,7 +180,7 @@
         this.renderer.render(this.scene, this.camera);
 
         for (let i = 0; i < this.updates.length; i++)
-            this.updates[i](deltaMsec, nowMsec / 1000);
+            this.updates[i].update(deltaMsec, nowMsec / 1000);
 
     }
 

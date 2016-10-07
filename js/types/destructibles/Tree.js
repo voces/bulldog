@@ -2,7 +2,7 @@
 class Tree extends Destructible {
     constructor(props = {}) {
 
-        props.footprint = {
+        props.structure = {
             map: [
                 FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE,
                 FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE],

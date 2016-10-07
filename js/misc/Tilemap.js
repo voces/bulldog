@@ -1,6 +1,6 @@
 
 class Tilemap {
-    constructor(width, height, vertices, orientationMap, tilemap) {
+    constructor(width, height, geometry, orientationMap, tilemap) {
 
         this.width = width;
         this.height = height;
@@ -8,7 +8,8 @@ class Tilemap {
         this.realWidth = width*8;
         this.realHeight = height*8;
 
-        this.vertices = vertices;
+        this.vertices = geometry.vertices;
+        this.faces = geometry.faces;
         this.orientationMap = orientationMap;
         this.tilemap = tilemap;
 
@@ -31,8 +32,9 @@ class Tilemap {
 
         if (x < 0 || y < 0 || x === this.width || y === this.height) return;
 
-        let i = y*(this.width+1) + x,
-            tile = new Tile(x, y, this.tilemap[`${x},${y}`], [this.vertices[i], this.vertices[i+1], this.vertices[i+this.width+1], this.vertices[i+this.width+2]]);
+        let vertexIndex = y*(this.width+1) + x,
+            faceIndex = y*this.width + x,
+            tile = new Tile(x, y, this.tilemap[`${x},${y}`], [this.vertices[vertexIndex], this.vertices[vertexIndex+1], this.vertices[vertexIndex+this.width+1], this.vertices[vertexIndex+this.width+2]], [this.faces[faceIndex], this.faces[faceIndex+1]]);
 
         setTimeout(() => {
 
