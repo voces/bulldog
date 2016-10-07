@@ -30,8 +30,8 @@ class Terrain extends Doodad {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
                 this.geometry.vertices[i].z = heightmap[i];
             }
-            // this.geometry.vertices[i].x += 2 * Math.random();
-            // this.geometry.vertices[i].y += 2 * Math.random();
+            this.geometry.vertices[i].x += 2 * Math.random();
+            this.geometry.vertices[i].y += 2 * Math.random();
         }
 
 
@@ -69,7 +69,9 @@ class Terrain extends Doodad {
         this.createMesh();
 
         // this.on("hover", intersect => {
-        //     console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
+        //     let tile = this.tilemap.getTile(intersect.point.x, intersect.point.y);
+        //     console.log(tile.minHeight.toFixed(2), "-", tile.maxHeight.toFixed(2));
+        //     // console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
         // });
 
     }
@@ -95,5 +97,25 @@ class Terrain extends Doodad {
 
         let tile = this.simpleTileMap[`${x},${y}`];
         return tile === undefined ? -1 : tile;
+    }
+
+    minHeight(x, y, radius = 0) {
+
+        let minX = Math.floor((x - radius + this.width / 2) / 8),
+            maxX = Math.floor((x + radius + this.width / 2) / 8),
+            minY = this.height / 8 - Math.floor((y + radius + this.height / 2) / 8) - 1,
+            maxY = this.height / 8 - Math.floor((y - radius + this.height / 2) / 8) - 1,
+
+            minHeight = Infinity;
+
+        for (let x = minX; x <= maxX; x++)
+            for (let y = minY; y <= maxY; y++) {
+                let height = this.tilemap.grid[x][y].minHeight;
+
+                if (height < minHeight) minHeight = height;
+            }
+
+        return minHeight;
+
     }
 }

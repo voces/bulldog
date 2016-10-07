@@ -20,22 +20,41 @@ class Unit extends Destructible {
         Unit.emit("hoverOff", intersect);
     }
 
-    showSelectionCircle(rgb = 0xFFFFFF) {
+    set selectionCircleColor(value) {
 
-        if (!this._selectionCircle)
-            this._selectionCircle = new SelectionCircle({
-                rgb: rgb,
-                x: this.x,
-                y: this.y
-            });
+        this.selectionCircle.color = value;
 
-        if (this._selectionCircle.shown) return;
+    }
+
+    get selectionCircle() {
+
+        if (this._selectionCircle) return this._selectionCircle;
+
+        this._selectionCircle = new SelectionCircle({
+            rgb: 0xFFFFFF,
+            x: this.x,
+            y: this.y
+        });
+
+        return this._selectionCircle;
+
+    }
+
+    showSelectionCircle(rgb) {
+
+        if (this.selectionCircle.shown) return;
+        this.selectionCircle.shown = true;
+
+        if (rgb) this._selectionCircle.color = new THREE.Color(rgb);
 
         app.game.emit("showEntity", this._selectionCircle);
 
     }
 
     hideSelectionCircle() {
+
+        if (!this.selectionCircle.shown) return;
+        this.selectionCircle.shown = false;
 
         app.game.emit("hideEntity", this._selectionCircle);
 

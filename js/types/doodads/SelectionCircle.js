@@ -12,11 +12,16 @@ class SelectionCircle extends Doodad {
         geometry.vertices.shift();
         this.mesh = new THREE.Line(geometry, material);
 
-        this.mesh.position.z = 5;
+        this.mesh.position.z = app.game.round.arena.terrain.minHeight(this.x, this.y, this.size * 4) + 1;
 
         this.shown = false;
 
         this.registerMesh();
 
     }
+
+    set color(value) { this.mesh.material.color = value; }
+
+    get color() { return this.mesh.material.color; }
+
 }
