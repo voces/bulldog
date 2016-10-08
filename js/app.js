@@ -15,14 +15,13 @@ class App extends EventEmitter2 {
         graphic.on("hoverOff", (oldIntersect, newIntersect) => this.emit("hoverOff", oldIntersect, newIntersect));
         graphic.on("hoverFace", intersect => this.emit("hoverFace", intersect));
         graphic.on("hover", intersect => this.emit("hover", intersect));
+        graphic.on("mosueDown", intersect => this.emit("mosueDown", intersect));
+        graphic.on("mouseUp", intersect => this.emit("mouseUp", intersect));
 
         this.game = new Game(this);
 
         this.game.on("showEntity", entity => this.showEntity(entity));
         this.game.on("hideEntity", entity => this.hideEntity(entity));
-
-        this.game.on("activeEntity", entity => this.activeEntity(entity));
-        this.game.on("inactiveEntity", entity => this.inactiveEntity(entity));
 
         graphic.updates.push(this);
 
@@ -56,16 +55,6 @@ class App extends EventEmitter2 {
             if (entity.mixer)
                 graphic.updates.splice(graphic.upgrades.indexOf(entity.mixerProxy), 1);
         }
-
-    }
-
-    activeEntity(entity) {
-
-
-
-    }
-
-    inactiveEntity(entity) {
 
     }
 

@@ -64,6 +64,8 @@ class Game extends EventEmitter2 {
         });
         this.app.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
         this.app.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
+        this.app.on("mosueDown", intersect => intersect.object.entity.emit("mouseDown", intersect));
+        this.app.on("mouseUp", intersect => intersect.object.entity.emit("mouseUp", intersect));
 
         this.app.on("update", delta => this.update(delta));
 
@@ -93,7 +95,6 @@ class Game extends EventEmitter2 {
 
         // this.emit("clean");
 
-        this.round = true;
         this.round = new Round(this);
 
     }

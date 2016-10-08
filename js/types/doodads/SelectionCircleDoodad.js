@@ -1,5 +1,5 @@
 
-class SelectionCircle extends Doodad {
+class SelectionCircleDoodad extends Doodad {
     constructor(props) {
         super(props);
 
@@ -12,6 +12,7 @@ class SelectionCircle extends Doodad {
         geometry.vertices.shift();
         this.mesh = new THREE.Line(geometry, material);
 
+        // console.log(app.game.round.arena.terrain.minHeight);
         this.mesh.position.z = app.game.round.arena.terrain.minHeight(this.x, this.y, this.size * 4) + 1;
 
         this.shown = false;

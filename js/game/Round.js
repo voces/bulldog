@@ -17,6 +17,8 @@ class Round extends EventEmitter2 {
     constructor(game) {
         super();
 
+        game.round = this;
+
         this.settings = game.settings;
         this.players = [...game.players];
         this.arena = game.levels[this.settings.arena];

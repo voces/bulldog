@@ -99,7 +99,8 @@
 
     onMouseDown(e) {
 
-        if (e.target.constructor !== HTMLCanvasElement) return;
+        if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
+            return;
 
         if (this.lastIntersect) this.emit("mouseDown", this.lastIntersect);
 
@@ -107,7 +108,8 @@
 
     onMouseUp(e) {
 
-        if (e.target.constructor !== HTMLCanvasElement) return;
+        if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
+            return;
 
         if (this.lastIntersect) this.emit("mouseUp", this.lastIntersect);
 
