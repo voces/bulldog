@@ -7,6 +7,8 @@ class UI {
 
         this.container.classList.add("game");
 
+        this.container.oncontextmenu = () => false;
+
         document.body.appendChild(this.container);
 
         this.createResourceDisplay();

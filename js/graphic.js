@@ -24,8 +24,8 @@
         this.defaultScene = this.scene;
 
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
-        // this.camera.position.z = 20;
-        // this.camera.position.y = -30;
+        // this.camera.position.z = 60;
+        // this.camera.position.y = -40;
         this.camera.position.z = 300;
         this.camera.position.y = -200;
         // this.camera.rotation.y = Math.PI / 2;
@@ -102,7 +102,7 @@
         if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
             return;
 
-        if (this.lastIntersect) this.emit("mouseDown", this.lastIntersect);
+        if (this.lastIntersect) this.emit("mouseDown", this.lastIntersect, e);
 
     }
 
@@ -111,13 +111,13 @@
         if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
             return;
 
-        if (this.lastIntersect) this.emit("mouseUp", this.lastIntersect);
+        if (this.lastIntersect) this.emit("mouseUp", this.lastIntersect, e);
 
     }
 
     mouseEvents() {
 
-        //Quit if the camera/scene don't exist (can't intersect) or the mosue
+        //Quit if the camera/scene don't exist (can't intersect) or the mouse
         //  hasn't moved (not a new intersect)
         if (!this.camera || !this.scene || !this.mouse.moved) return;
         this.mouse.moved = false;

@@ -7,7 +7,7 @@ let width = 28,
     nudgeW = (width % 2 ? 0 : 8),
     nudgeH = (height % 2 ? 0 : 8);
 
-new Level({
+new Arena({
     dimensions: {
         height: height,
         width: width
@@ -72,6 +72,8 @@ new Level({
                 x:  14 * 8 + nudgeW,
                 y: -11 * 8 + nudgeH
             }
+        ], Farm: [
+            {}
         ]
     },
     tileHeightMap: `

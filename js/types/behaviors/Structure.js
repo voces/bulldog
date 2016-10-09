@@ -1,14 +1,4 @@
 
-const FOOTPRINT_TYPE = {
-        NOT_BUILDABLE: 1,
-        NOT_WALKABLE: 2,
-        NOT_FLYABLE: 4,
-        SWIMABLE: 8
-    };
-
-FOOTPRINT_TYPE.OBSTACLE = FOOTPRINT_TYPE.NOT_BUILDABLE + FOOTPRINT_TYPE.NOT_WALKABLE;
-FOOTPRINT_TYPE.GROUND = 0;
-
 class Structure extends Behavior {
 
     constructor(props) {

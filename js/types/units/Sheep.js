@@ -10,6 +10,8 @@ class Sheep extends Unit {
             radius: 4
         };
 
+        props.builds = props.builds || Sheep.builds;
+
         super(props);
 
         this.fetchModel("/models/sheep.json", geo => {
@@ -29,5 +31,7 @@ class Sheep extends Unit {
     }
 
 }
+
+Sheep.builds = [{type: Farm}];
 
 TYPES.Sheep = Sheep;

@@ -4,18 +4,25 @@ function faceToVertices(mesh, face) {
 }
 
 class Terrain extends Doodad {
-    constructor(width, height, orientation=[], heightmap=[], colors=[], tileMap=[]) {
-        super();
+    constructor(props) {
+        super(props);
 
-        this.width = width*16;
-        this.height = height*16;
+        props.width = props.width || 1;
+        props.height = props.height || 1;
+        props.orientation = props.orientation || [];
+        props.heightMap = props.heightMap || [];
+        props.colors = props.colors || [];
+        props.tileMap = props.tileMap || [];
+
+        this.width = props.width*16;
+        this.height = props.height*16;
 
         this.minX = this.width / -2;
         this.maxX = this.width / 2;
         this.minY = this.height / -2;
         this.maxY = this.height / 2;
 
-        this.geometry = new THREE.PlaneGeometry(this.width, this.height, width*2, height*2);
+        this.geometry = new THREE.PlaneGeometry(this.width, this.height, this.width/8, this.height/8);
         // for (let i = 0; i < this.geometry.faces.length; i++)
         //     this.geometry.faces[i].color.setHex(0xF4A460);
 
@@ -23,10 +30,10 @@ class Terrain extends Doodad {
         // console.log(this.geometry.vertices.length, this.geometry.faces.length);
         // console.log(orientation.length, heightmap.length);
 
-        for (let i = 0; i < heightmap.length && i < this.geometry.vertices.length; i++) {
-            if (heightmap[i]) {
+        for (let i = 0; i < props.heightMap.length && i < this.geometry.vertices.length; i++) {
+            if (props.heightMap[i]) {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
-                this.geometry.vertices[i].z = heightmap[i];
+                this.geometry.vertices[i].z = props.heightMap[i];
             }
             this.geometry.vertices[i].x += 2 * Math.random();
             this.geometry.vertices[i].y += 2 * Math.random();
@@ -35,8 +42,8 @@ class Terrain extends Doodad {
         //Rotate some squares (makes stuff look a bit less uniform)
         for (let i = 0; i < this.geometry.faces.length/2; i++)
 
-            if (orientation[i]) {
-                if (orientation[i] === 2) {
+            if (props.orientation[i]) {
+                if (props.orientation[i] === 2) {
                     // console.log(i);
                     this.geometry.faces[i*2].c = this.geometry.faces[i*2+1].b;
                     this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
@@ -48,22 +55,22 @@ class Terrain extends Doodad {
                 this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
             }
 
-        this.tilemap = new Tilemap(width*2, height*2, this.geometry, orientation, tileMap);
+        this.tilemap = new Tilemap(props.width*2, props.height*2, this.geometry, props.orientation, props.tileMap);
 
         this.geometry.computeFaceNormals();
         this.geometry.computeVertexNormals();
 
-        for (let i = 0; i < colors.length; i++) {
-            if (colors[i]) {
-                this.geometry.faces[i*2].color.setHex(colors[i])
-                this.geometry.faces[i*2+1].color.setHex(colors[i])
+        for (let i = 0; i < props.colors.length; i++) {
+            if (props.colors[i]) {
+                this.geometry.faces[i*2].color.setHex(props.colors[i])
+                this.geometry.faces[i*2+1].color.setHex(props.colors[i])
             } else {
                 this.geometry.faces[i*2].color.setHex(0xF4A460)
                 this.geometry.faces[i*2+1].color.setHex(0xF4A460)
             }
         }
 
-        this.simpleTileMap = tileMap;
+        this.simpleTileMap = props.tileMap;
 
         this.createMesh();
 
@@ -72,6 +79,10 @@ class Terrain extends Doodad {
         //     console.log(tile.minHeight.toFixed(2), "-", tile.maxHeight.toFixed(2));
         //     // console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
         // });
+
+        this.on("mouseDown", (intersect, e) => {
+            if (e.button === 2) this.emit("autoGround", intersect, e);
+        });
 
     }
 

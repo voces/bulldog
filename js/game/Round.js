@@ -20,9 +20,13 @@ class Round extends EventEmitter2 {
         game.round = this;
 
         this.settings = game.settings;
-        this.players = [...game.players];
-        this.arena = game.levels[this.settings.arena];
+        this.players = [...app.players];
+        this.arena = game.arenas[this.settings.arena];
         this.rng = game.rng;
+
+        app.terrain = this.arena.terrain;
+
+        this.arena.show();
 
         // if (this.settings.view) this.disableFogOfWar();
         // else this.enableFogOfWar();
@@ -30,8 +34,6 @@ class Round extends EventEmitter2 {
         this.pickTeams();
 
         this.playerActions();
-
-        // console.log(this.sheepTeam, this.wolfTeam);
 
         // this.spawnSheep();
         // this.spawnWolves();

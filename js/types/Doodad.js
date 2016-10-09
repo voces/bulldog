@@ -17,9 +17,15 @@ class Doodad extends EventEmitter2 {
         this.behaviors = [];
         this.activeBehaviors = [];
 
+        this._visible = typeof props.visible === "boolean" ? props.visible : true;
+
+        Doodad.emit("new", this);
+
     }
 
     createMesh(args = {}) {
+        if (this.mesh && this.visible) this.emit("hide");
+
         if (args.geometry) this.geometry = args.geometry;
         if (args.material) this.material = args.material;
 
@@ -41,8 +47,30 @@ class Doodad extends EventEmitter2 {
         this.y = this.y;
         // this.mesh.position.z = app.game.round.arena.
 
-        Doodad.emit("new", this);
+        if (this.visible) this.emit("show");
 
+    }
+
+    get visible() { return this._visible; }
+    set visible(value) {
+        if (this._visible === value) return;
+
+        if (value) this.show();
+        else this.hide();
+    }
+
+    hide() {
+        if (!this._visible) return;
+
+        this._visible = false;
+        this.emit("hide");
+    }
+
+    show() {
+        if (this._visible) return;
+
+        this._visible = true;
+        this.emit("show");
     }
 
     registerMesh() {
@@ -52,7 +80,7 @@ class Doodad extends EventEmitter2 {
         this.x = this.x;
         this.y = this.y;
 
-        Doodad.emit("new", this);
+        if (this.visible) this.emit("show");
 
     }
 

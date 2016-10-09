@@ -13,17 +13,19 @@ class Player extends EventEmitter2 {
         if (typeof this.state === "undefined") this.state = {};
 
         //Check the game state for more info (this is player-controlled via sync statements)
-        if (gameState.players)
-            for (let i = 0; i < gameState.players.length; i++)
-                if (gameState.players.id === this.id) {
-
-                    for (let prop in gameState.players[i])
-                        this.state[prop] = gameState.players[i][prop];
-
-                    break;
-                }
+        // if (gameState.players)
+        //     for (let i = 0; i < gameState.players.length; i++)
+        //         if (gameState.players.id === this.id) {
+        //
+        //             for (let prop in gameState.players[i])
+        //                 this.state[prop] = gameState.players[i][prop];
+        //
+        //             break;
+        //         }
 
         this._currency = 0;
+
+        this.selection = null;
 
     }
 

@@ -7,6 +7,8 @@ class Destructible extends Doodad {
         if (props.structure)
             new Structure({entity: this, structure: props.structure});
 
+        new SelectionCircle({entity: this, selectable: false});
+
     }
 
 }

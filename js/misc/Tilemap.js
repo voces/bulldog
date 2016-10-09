@@ -1,4 +1,14 @@
 
+const FOOTPRINT_TYPE = {
+        NOT_BUILDABLE: 1,
+        NOT_WALKABLE: 2,
+        NOT_FLYABLE: 4,
+        SWIMABLE: 8
+    };
+
+FOOTPRINT_TYPE.OBSTACLE = FOOTPRINT_TYPE.NOT_BUILDABLE + FOOTPRINT_TYPE.NOT_WALKABLE;
+FOOTPRINT_TYPE.GROUND = 0;
+
 class Tilemap {
     constructor(width, height, geometry, orientationMap, tilemap) {
 
@@ -36,12 +46,18 @@ class Tilemap {
 
                 tile.tiles = [];
 
-            if ((posMask & 1) === 1) tile.tiles.push(tile.left = this.createTile(x-1, y));
-            if ((posMask & 2) === 2) tile.tiles.push(tile.right = this.createTile(x+1, y));
-            if ((posMask & 4) === 4) tile.tiles.push(tile.top = this.createTile(x, y-1));
-            if ((posMask & 5) === 5) tile.tiles.push(tile.topLeft = this.createTile(x-1, y-1));
-            if ((posMask & 6) === 6) tile.tiles.push(tile.topRight = this.createTile(x+1, y-1));
-            if ((posMask & 8) === 8) tile.tiles.push(tile.bottom = this.createTile(x, y+1));
+            if ((posMask & 1) === 1)
+                tile.tiles.push(tile.left = this.createTile(x-1, y));
+            if ((posMask & 2) === 2)
+                tile.tiles.push(tile.right = this.createTile(x+1, y));
+            if ((posMask & 4) === 4)
+                tile.tiles.push(tile.top = this.createTile(x, y-1));
+            if ((posMask & 5) === 5)
+                tile.tiles.push(tile.topLeft = this.createTile(x-1, y-1));
+            if ((posMask & 6) === 6)
+                tile.tiles.push(tile.topRight = this.createTile(x+1, y-1));
+            if ((posMask & 8) === 8)
+                tile.tiles.push(tile.bottom = this.createTile(x, y+1));
             if ((posMask & 9) === 9) tile.tiles.push(tile.bottomLeft = this.createTile(x-1, y+1));
             if ((posMask & 10) === 10) tile.tiles.push(tile.bottomRight = this.createTile(x+1, y+1));
         }
@@ -74,6 +90,17 @@ class Tilemap {
         // console.log(x, y, this.grid[x][y]);
 
         return this.grid[x][y];
+
+    }
+
+    nearestPathing(x, y, type, radius) {
+
+
+
+        x = (x + this.realWidth / 2) / 8;
+        y = this.realHeight / 8 - (y + this.realHeight / 2) / 8 - 1;
+
+        console.log("Tilemap.nearestPathing", x, y);
 
     }
 }

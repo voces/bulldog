@@ -5,7 +5,6 @@ class SelectionCircle extends Behavior {
 
         this.entity.on("hoverOn", intersect => this.onHoverOn(intersect));
         this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
-
         this.entity.on("mouseUp", intersect => this.onMouseUp(intersect));
 
         this._selectionCircle = new SelectionCircleDoodad({
@@ -14,31 +13,41 @@ class SelectionCircle extends Behavior {
             y: this.entity.y
         });
 
-        app.game.emit("hideEntity", this._selectionCircle);
-
-        app.game.on("selection", entities => {
-            if (entities.indexOf(this.entity) === -1) this.deselect()});
+        // app.game.emit("hideEntity", this._selectionCircle);
+        //
+        app.on("selection", entities =>
+            entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
 
     }
 
-    onHoverOn(intersect) { this.show(0xFFFF00); }
+    onHoverOn(intersect) {
+
+        if (app.selectionFilter.type)
+            if (!(this.entity instanceof app.selectionFilter.type)) return;
+
+        this.show(0xFFFF00);
+    }
 
     onHoverOff(intersect) {
-        !this.selected ? this.hide() :this.color = new THREE.Color(0x00FF00);
+
+        if (this.entity.selected)
+            return this.color = new THREE.Color(0x00FF00);
+
+        this.hide();
+
     }
 
     onMouseUp(intersect) {
+        app.emit("selection", [this.entity]);
+    }
 
-        this.color = new THREE.Color(0x00FF00);
-
-        this.selected = true;
-
-        app.game.emit("selection", [this.entity]);
-
+    select() {
+        this.entity.selected = true;
+        this.show(0x00FF00);
     }
 
     deselect() {
-        this.selected = false;
+        this.entity.selected = false;
         this.hide();
     }
 
@@ -50,19 +59,13 @@ class SelectionCircle extends Behavior {
         if (rgb && rgb !== this.color)
             this.color = new THREE.Color(rgb);
 
-        if (this.shown) return;
-        this.shown = true;
-
-        app.game.emit("showEntity", this._selectionCircle);
+        this._selectionCircle.show();
 
     }
 
     hide() {
 
-        if (!this.shown) return;
-        this.shown = false;
-
-        app.game.emit("hideEntity", this._selectionCircle);
+        this._selectionCircle.hide();
 
     }
 }

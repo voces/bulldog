@@ -1,24 +1,16 @@
 
 class Game extends EventEmitter2 {
-    constructor(app) {
+    constructor() {
         super();
 
-        this.app = app;
-
-        this.levels = Level.instances;
-        this.level = 0;
-
-        // Level.on("new", level => console.log("new level!"));
-        // Level.on("new", level => this.levels.push(level));
-        // Level.on("new", () => console.log("level"));
+        this.arenas = Arena.instances;
+        this.arenaId = 0;
 
         this.ui = new UI();
-        // this.ui.currency = 12;
 
         this.ui.showResourceDisplay();
         this.ui.showCommandDeck();
 
-        this.players = [];
         this.host = null;
 
         this.entities = [];
@@ -40,54 +32,48 @@ class Game extends EventEmitter2 {
 
         this.initAppListeners();
 
-        Doodad.on("new", entity => this.newEntity(entity));
-        Doodad.on("active", entity => this.activeEntity(entity));
-        Doodad.on("inactive", entity => this.inactiveEntity(entity));
-        // Doodad.on("new", entity => this.round ? this.emit("showEntity", entity) : null);
-        // Doodad.on("active", entity => this.round ? this.emit("activeEntity", entity) : null);
-        // Doodad.on("inactive", entity => this.round ? this.emit("inactiveEntity", entity) : null);
+        // Unit.on("hoverOn", () => this.ui.enablePointerCursor());
+        // Unit.on("hoverOff", () => this.ui.disablePointerCursor());
 
-        Unit.on("hoverOn", () => this.ui.enablePointerCursor());
-        Unit.on("hoverOff", () => this.ui.disablePointerCursor());
+        // Arena.on("autoGround", (arena, intersect, e) => {
+        //     if (this.localPlayer.selection)
+        //         for (let i = 0; i < this.localPlayer.selection.length; i++)
+        //             this.localPlayer.selection[i].emit("autoGround", arena, intersect, e);
+        // })
+        //
+        // this.on("selection", selection => this.localPlayer.selection = selection);
 
     }
 
     initAppListeners() {
 
-        this.app.on("message", message => this.messageSwitcher(message));
+        // app.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
+        // app.on("hoverOff", (oldIntersect, newIntersect) => {
+        //     oldIntersect.object.entity.emit("hoverOff", oldIntersect, newIntersect);
+        //     if (newIntersect)
+        //         newIntersect.object.entity.emit("hoverOn", newIntersect);
+        // });
+        // app.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
+        // app.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
+        // app.on("mouseDown", (intersect, e) => intersect.object.entity.emit("mouseDown", intersect, e));
+        // app.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
 
-        this.app.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
-        this.app.on("hoverOff", (oldIntersect, newIntersect) => {
-            oldIntersect.object.entity.emit("hoverOff", oldIntersect, newIntersect);
-            if (newIntersect)
-                newIntersect.object.entity.emit("hoverOn", newIntersect);
-        });
-        this.app.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
-        this.app.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
-        this.app.on("mosueDown", intersect => intersect.object.entity.emit("mouseDown", intersect));
-        this.app.on("mouseUp", intersect => intersect.object.entity.emit("mouseUp", intersect));
+        app.on("rng", rng => this.rng = rng);
 
-        this.app.on("update", delta => this.update(delta));
-
-    }
-
-    messageSwitcher(message) {
-
-        if (message.origin === -1)
-            switch (message.eid) {
-                case "connected": this.connected(message.clientId, message.state, message.party); break;
-            }
+        app.on("connected", message => this.onConnected(message));
 
     }
 
-    showLevel(i) {
+    showArena(i) {
 
-        this.level = i % this.levels.length;
+        this.arena = this.arenas[i % this.arenas.length];
 
-        this.emit("clean");
-        this.emit("showEntity", this.levels[this.level].terrain);
-        for (let i = 0; i < this.levels[this.level].entities.length; i++)
-            this.emit("showEntity", this.levels[this.level].entities[i]);
+
+
+        // this.emit("clean");
+        // this.emit("show", this.arenas[this.arena].terrain);
+        // for (let i = 0; i < this.arenas[this.arena].entities.length; i++)
+        //     this.emit("show", this.arenas[this.arena].entities[i]);
 
     }
 
@@ -99,56 +85,19 @@ class Game extends EventEmitter2 {
 
     }
 
-    connected(myId, state, party) {
+    get arena() { return this.arenas[this.arenaId]; }
 
-        this.showLevel(state.level);
+    onConnected(message) {
 
-        this.rng = new RNG(state.seed);
-
-        for (let i = 0; i < party.length; i++)
-            this.players.push(new Player(party[i], state));
-
-        this.localPlayer = new Player({id: myId, isLocalPlayer: true}, state);
-        this.players.push(this.localPlayer);
-        this.localPlayer.on("currency", value => this.ui.currency = value);
-
-        //Just me
-        if (this.players.length === 1)
+        //Jsut us
+        if (message.party.length === 0)
             this.start();
+            // this.arena.show();
+
 
     }
 
-    newEntity(entity) {
-
-        this.emit("showEntity", entity);
-        this.entities.push(entity);
-
-        if (entity.active) this.activeEntity(entity);
-
-        entity.on("active", () => this.activeEntity(entity));
-        entity.on("inactive", () => this.inactiveEntity(entity));
-
-    }
-
-    activeEntity(entity) {
-
-        this.activeEntities.push(entity);
-
-    }
-
-    inactiveEntity(entity) {
-
-        this.activeEntities.splice(this.activeEntities.idnexOf(entity), 1);
-
-    }
-
-    update(delta) {
-
-        // console.log(`Game.update(${delta})`, this.activeEntities.length);
-
-        for (let i = 0; i < this.activeEntities.length; i++)
-            this.activeEntities[i].update(delta);
-
-    }
 
 }
+
+let game = new Game();

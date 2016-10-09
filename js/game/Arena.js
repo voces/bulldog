@@ -1,5 +1,5 @@
 
-class Level extends EventEmitter2 {
+class Arena extends EventEmitter2 {
     constructor(props) {
         super();
 
@@ -9,6 +9,7 @@ class Level extends EventEmitter2 {
         };
 
         this.tileMap = {};
+        this.entities = [];
 
         if (props.tileHeightMap) this.calcTileHeightMap(props.tileHeightMap);
 
@@ -22,17 +23,17 @@ class Level extends EventEmitter2 {
 
         this.generateTerrain();
 
-        this.entities = [];
-
         for (let type in props.entities)
             for (let i = 0; i < props.entities[type].length; i++) {
                 // console.log(type, props.entities[type][i]);
-                this.entities.push(new TYPES[type](props.entities[type][i]));
+                let entityProps = props.entities[type][i];
+                entityProps.visible = false;
+                this.entities.push(new TYPES[type](entityProps));
             }
 
-        Level.emit("new", this);
+        Arena.emit("new", this);
 
-        Level.instances.push(this);
+        this.id = Arena.instances.push(this) - 1;
 
     }
 
@@ -147,19 +148,41 @@ class Level extends EventEmitter2 {
 
     generateTerrain() {
 
-        this.terrain = new Terrain(
-            this.dimensions.width,
-            this.dimensions.height,
-            this.orientation,
-            this.heightMap,
-            this.colors,
-            this.tileMap);
+        this.terrain = new Terrain({
+            width: this.dimensions.width,
+            height: this.dimensions.height,
+            orientation: this.orientation,
+            heightMap: this.heightMap,
+            colors: this.colors,
+            tileMap: this.tileMap,
+            visible: false
+        });
+
+        this.terrain.hide();
+
+        this.entities.push(this.terrain);
+
+        this.terrain.on("autoGround", (intersect, e) => Arena.emit("autoGround", this, intersect, e));
+
+    }
+
+    show() {
+
+        for (let i = 0; i < this.entities.length; i++)
+            this.entities[i].show();
+
+    }
+
+    hide() {
+
+        for (let i = 0; i < this.entities.length; i++)
+            this.entities[i].hide();
 
     }
 }
 
-emitterMixin(Level);
+emitterMixin(Arena);
 
-Level.instances = [];
+Arena.instances = [];
 
-window.Level = Level;
+window.Arena = Arena;
