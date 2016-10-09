@@ -8,6 +8,15 @@ class Unit extends Destructible {
 
         this.on("autoGround", (arena, intersect, e) => this.autoGround(arena, intersect, e));
 
+        if (props.builds) {
+            if (!this.commandDeck) this.commandDeck = new CommandDeck();
+
+            for (let i = 0; i < props.builds.length; i++)
+                this.commandDeck.add(props.builds[i]);
+        }
+
+        this.hotkey = props.hotkey || this.constructor.hotkey;
+
     }
 
     autoGround(arena, intersect, e) {

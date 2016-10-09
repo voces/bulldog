@@ -1,7 +1,12 @@
 
 class Farm extends Unit {
     constructor(props) {
+
+        if (typeof props.hotkey === undefined) props.hotkey = Farm.hotkey;
+
         super(props);
+
+        this.radius = Math.sqrt(2);
 
         this.fetchModel("/models/farm.json", geo => {
 
@@ -13,6 +18,7 @@ class Farm extends Unit {
             this.createMesh();
 
         });
+
     }
 
     faceColor(i) {
@@ -26,5 +32,7 @@ class Farm extends Unit {
         }
     }
 }
+
+Farm.hotkey = "F";
 
 TYPES.Farm = Farm;

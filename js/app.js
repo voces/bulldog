@@ -12,10 +12,15 @@ class App extends EventEmitter2 {
 
         this.players = [];
 
-        this.entities = new Set();
+        this.entities = [];
         this.activeEntities = new Set();
 
         this.selectionFilter = SELECTION_FILTER.UNITS;
+
+        this.ui = new UI();
+
+        this.ui.showResourceDisplay();
+        this.ui.showCommandDeck();
 
         ws.on("message", message => this.messageSwitcher(message));
 
@@ -31,7 +36,7 @@ class App extends EventEmitter2 {
         graphic.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
 
         Doodad.on("new", entity => this.newEntity(entity));
-        
+
         graphic.updates.push(this);
 
     }
@@ -54,7 +59,7 @@ class App extends EventEmitter2 {
 
         this.localPlayer = new Player({id: message.clientId, isLocalPlayer: true});
         this.players.push(this.localPlayer);
-        // this.localPlayer.on("currency", value => this.ui.currency = value);
+        this.localPlayer.on("currency", value => this.ui.currency = value);
 
         this.emit("connected", message);
 
@@ -62,9 +67,7 @@ class App extends EventEmitter2 {
 
     newEntity(entity) {
 
-        if (this.entities.has(entity)) return;
-
-        this.entities.add(entity);
+        this.entities.push(entity);
 
         if (entity.mesh && entity.visible) this.showMesh(entity);
 
@@ -102,11 +105,9 @@ class App extends EventEmitter2 {
 
     removeEntity(entity) {
 
-        if (this.entities.has(entity)) {
-            this.entities.remove(entity);
+        this.entities.splice(this.entities.indexOf(entity), 1);
 
-            if (entity._meshAdded) graphic.scene.remove(entity._meshAdded);
-        }
+        if (entity._meshAdded) graphic.scene.remove(entity._meshAdded);
 
         if (entity.active) this.activeEntities.remove(entity);
 

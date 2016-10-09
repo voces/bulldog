@@ -11,8 +11,8 @@ class Doodad extends EventEmitter2 {
         this.y = props.y || 0;
         this.height = props.height || 0;
 
-        this._scale = 1;
-        this._size = 1;
+        this.scale = props.scale || 1;
+        this.radius = props.radius || 1;
 
         this.behaviors = [];
         this.activeBehaviors = [];
@@ -83,9 +83,6 @@ class Doodad extends EventEmitter2 {
         if (this.visible) this.emit("show");
 
     }
-
-    get size() { return this._size; }
-    get scale() { return this._scale; }
 
     set x(value) {
         this._x = value;

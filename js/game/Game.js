@@ -6,11 +6,6 @@ class Game extends EventEmitter2 {
         this.arenas = Arena.instances;
         this.arenaId = 0;
 
-        this.ui = new UI();
-
-        this.ui.showResourceDisplay();
-        this.ui.showCommandDeck();
-
         this.host = null;
 
         this.entities = [];

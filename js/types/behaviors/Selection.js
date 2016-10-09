@@ -1,5 +1,5 @@
 
-class SelectionCircle extends Behavior {
+class Selection extends Behavior {
     constructor(props) {
         super(props);
 
@@ -7,17 +7,22 @@ class SelectionCircle extends Behavior {
         this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
         this.entity.on("mouseUp", intersect => this.onMouseUp(intersect));
 
-        this._selectionCircle = new SelectionCircleDoodad({
-            rgb: 0xFFFFFF,
-            x: this.entity.x,
-            y: this.entity.y
-        });
-
-        // app.game.emit("hideEntity", this._selectionCircle);
-        //
         app.on("selection", entities =>
             entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
 
+    }
+
+    get selectionCircle() {
+        if (this._selectionCircle) return this._selectionCircle;
+
+        this._selectionCircle = new SelectionCircle({
+            rgb: 0xFFFFFF,
+            x: this.entity.x,
+            y: this.entity.y,
+            radius: this.entity.radius
+        });
+
+        return this._selectionCircle;
     }
 
     onHoverOn(intersect) {
@@ -42,30 +47,32 @@ class SelectionCircle extends Behavior {
     }
 
     select() {
+        if (this.entity.selected) return;
         this.entity.selected = true;
         this.show(0x00FF00);
     }
 
     deselect() {
+        if (!this.entity.selected) return;
         this.entity.selected = false;
         this.hide();
     }
 
-    set color(value) { this._selectionCircle.color = value; }
-    get color() { return this._selectionCircle.color.getHex() }
+    set color(value) { this.selectionCircle.color = value; }
+    get color() { return this.selectionCircle.color.getHex() }
 
     show(rgb) {
 
         if (rgb && rgb !== this.color)
             this.color = new THREE.Color(rgb);
 
-        this._selectionCircle.show();
+        this.selectionCircle.show();
 
     }
 
     hide() {
 
-        this._selectionCircle.hide();
+        this.selectionCircle.hide();
 
     }
 }
