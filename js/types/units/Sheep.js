@@ -32,6 +32,11 @@ class Sheep extends Unit {
 
 }
 
-Sheep.builds = [{type: Farm}];
+Sheep.builds = [
+    {type: Farm},
+    {type: TinyFarm},
+    {type: WideFarm},
+    {type: HardFarm}
+];
 
 TYPES.Sheep = Sheep;

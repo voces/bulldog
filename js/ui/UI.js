@@ -51,6 +51,8 @@ class UI {
         this.commandDeck = document.createElement("div");
         this.commandDeck.classList.add("command-deck");
 
+        this.cards = {};
+
         let hotkeys = `
             qwer
             asdf
@@ -66,7 +68,7 @@ class UI {
                     icon = document.createElement("img"),
                     hotkey = document.createElement("span");
 
-                icon.src = "/img/circle.svg";
+                // icon.src = "/img/circle.svg";
 
                 hotkey.innerText = hotkeys[y][x];
 
@@ -78,9 +80,26 @@ class UI {
                 commandCard.style.left = x*2 + y + "em";
                 commandCard.style.top = y*1.7 + "em";
 
+                commandCard.icon = icon;
+
                 this.commandDeck.appendChild(commandCard);
 
+                this.cards[hotkey.innerText] = commandCard;
+
             }
+
+    }
+
+    loadDeck(commandDeck) {
+
+        for (let card in this.cards)
+            this.cards[card].style.visibility = "hidden";
+
+        for (let i = 0; i < commandDeck.cards.length; i++) {
+            let card = this.cards[commandDeck.cards[i].hotkey.toLowerCase()];
+            card.style.visibility = "";
+            card.icon.src = commandDeck.cards[i].icon;
+        }
 
     }
 

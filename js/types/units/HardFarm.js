@@ -1,13 +1,18 @@
 
-class Farm extends Unit {
+class HardFarm extends Unit {
     constructor(props) {
+
+        let O = FOOTPRINT_TYPE.OBSTACLE;
 
         props.structure = {
             map: [
-                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE,
-                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE],
-            width: 2,
-            height: 2,
+                O, O, O, O,
+                O, O, O, O,
+                O, O, O, O,
+                O, O, O, O
+            ],
+            width: 4,
+            height: 4,
             radius: 0
         };
 
@@ -16,6 +21,8 @@ class Farm extends Unit {
         this.fetchModel("/models/farm.json", geo => {
 
             this.geometry = geo;
+
+            this.geometry.scale(2, 2, 2);
 
             for (let i = 0; i < geo.faces.length; i++)
                 this.geometry.faces[i].color.setHex(this.faceColor(i));
@@ -38,10 +45,10 @@ class Farm extends Unit {
     }
 }
 
-Farm.hotkey = "f";
-Farm.icon = "img/farm.png";
-Farm.maxHealth = 120;
-Farm.buildTime = 1;
-Farm.cost = 0;
+HardFarm.hotkey = "r";
+HardFarm.icon = "img/hardFarm.png";
+HardFarm.maxHealth = 120;
+HardFarm.buildTime = 1;
+HardFarm.cost = 10;
 
-TYPES.Farm = Farm;
+TYPES.HardFarm = HardFarm;

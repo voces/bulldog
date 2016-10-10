@@ -24,11 +24,11 @@
         this.defaultScene = this.scene;
 
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
-        // this.camera.position.z = 60;
+        // this.camera.position.z = 40;
         // this.camera.position.y = -40;
+        // this.camera.rotation.x = 0.93412;
         this.camera.position.z = 300;
         this.camera.position.y = -200;
-        // this.camera.rotation.y = Math.PI / 2;
         this.camera.rotation.x = 0.593412;
         this.defaultCamera = this.camera;
 

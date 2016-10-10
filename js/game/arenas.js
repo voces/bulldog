@@ -72,9 +72,10 @@ new Arena({
                 x:  14 * 8 + nudgeW,
                 y: -11 * 8 + nudgeH
             }
-        ], Farm: [
-            {}
-        ]
+        ], Farm: [{x: -2 * 8 + nudgeW, y: nudgeH}],
+        TinyFarm: [{x: -4 * 8 + nudgeW, y: nudgeH}],
+        WideFarm: [{x: 2 * 8 + nudgeW, y: nudgeH}],
+        HardFarm: [{x: 6 * 8 + nudgeW, y: nudgeH}]
     },
     tileHeightMap: `
         23232323232323232323232323232

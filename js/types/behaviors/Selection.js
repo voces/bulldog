@@ -5,7 +5,7 @@ class Selection extends Behavior {
 
         this.entity.on("hoverOn", intersect => this.onHoverOn(intersect));
         this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
-        this.entity.on("mouseUp", intersect => this.onMouseUp(intersect));
+        this.entity.on("mouseUp", (intersect, e) => this.onMouseUp(intersect, e));
 
         app.on("selection", entities =>
             entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
@@ -31,9 +31,13 @@ class Selection extends Behavior {
             if (!(this.entity instanceof app.selectionFilter.type)) return;
 
         this.show(0xFFFF00);
+
+        app.ui.container.style.cursor = "pointer";
     }
 
     onHoverOff(intersect) {
+
+        app.ui.container.style.cursor = "";
 
         if (this.entity.selected)
             return this.color = new THREE.Color(0x00FF00);
@@ -42,14 +46,24 @@ class Selection extends Behavior {
 
     }
 
-    onMouseUp(intersect) {
+    onMouseUp(intersect, e) {
+
+        //Left click only
+        if (e.button !== 0) return;
+
+        if (app.selectionFilter.type)
+            if (!(this.entity instanceof app.selectionFilter.type)) return;
+
         app.emit("selection", [this.entity]);
     }
 
     select() {
         if (this.entity.selected) return;
+
         this.entity.selected = true;
         this.show(0x00FF00);
+
+        app.ui.loadDeck(this.entity.commandDeck);
     }
 
     deselect() {

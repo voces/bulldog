@@ -4,25 +4,38 @@ class Unit extends Destructible {
         super(props);
 
         this.owner = props.owner;
-        this.selected = false;
+        this._selected = false;
 
         this.on("autoGround", (arena, intersect, e) => this.autoGround(arena, intersect, e));
 
-        if (props.builds) {
-            if (!this.commandDeck) this.commandDeck = new CommandDeck();
+        this.commandDeck = new CommandDeck();
 
-            for (let i = 0; i < props.builds.length; i++)
-                this.commandDeck.add(props.builds[i]);
-        }
+        if (props.builds)
+            for (let i = 0; i < props.builds.length; i++) {
+                let prop = props.builds[i];
+                prop.action = () => this.seedBuildPlacement(prop.type);
+                this.commandDeck.add(prop);
+            }
 
         this.hotkey = props.hotkey || this.constructor.hotkey;
+        this.buildTime = props.buildTime || this.constructor.buildTime || 0;
+        this.cost = props.cost || this.constructor.cost || 0;
 
     }
 
     autoGround(arena, intersect, e) {
-        // this.emit("move", {})
         console.log(arena, intersect, e);
         arena.terrain.tilemap.nearestPathing(intersect.point.x, intersect.point.y, this.flying ? FOOTPRINT_TYPE.NOT_BUILDABLE : NOT_BUILDABLE.NOT_FLYABLE, this.radius);
+    }
+
+    get selected() { return this._selected; }
+    set selected(value) {
+        value = value ? true : false;
+        if (this._selected === value) return;
+        this._selected = value;
+
+        if (value) this.emit("selected");
+        else this.emit("deselected");
     }
 
 }

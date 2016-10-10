@@ -1,13 +1,15 @@
 
-class Farm extends Unit {
+class WideFarm extends Unit {
     constructor(props) {
 
         props.structure = {
             map: [
-                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE,
-                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE],
-            width: 2,
-            height: 2,
+                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE,
+                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE,
+                FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE, FOOTPRINT_TYPE.OBSTACLE
+            ],
+            width: 3,
+            height: 3,
             radius: 0
         };
 
@@ -16,6 +18,8 @@ class Farm extends Unit {
         this.fetchModel("/models/farm.json", geo => {
 
             this.geometry = geo;
+
+            this.geometry.scale(1.5, 1.5, 1.5);
 
             for (let i = 0; i < geo.faces.length; i++)
                 this.geometry.faces[i].color.setHex(this.faceColor(i));
@@ -38,10 +42,10 @@ class Farm extends Unit {
     }
 }
 
-Farm.hotkey = "f";
-Farm.icon = "img/farm.png";
-Farm.maxHealth = 120;
-Farm.buildTime = 1;
-Farm.cost = 0;
+WideFarm.hotkey = "w";
+WideFarm.icon = "img/wideFarm.png";
+WideFarm.maxHealth = 120;
+WideFarm.buildTime = 1;
+WideFarm.cost = 6;
 
-TYPES.Farm = Farm;
+TYPES.WideFarm = WideFarm;
