@@ -7,7 +7,7 @@ class Selection extends Behavior {
         this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
         this.entity.on("mouseUp", (intersect, e) => this.onMouseUp(intersect, e));
 
-        app.on("selection", entities =>
+        app.mouse.on("selection", entities =>
             entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
 
     }

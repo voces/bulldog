@@ -1,10 +1,4 @@
 
-const SELECTION_FILTER = {
-    UNITS: {
-        type: Unit
-    }
-};
-
 class App extends EventEmitter2 {
 
     constructor() {
@@ -17,6 +11,10 @@ class App extends EventEmitter2 {
 
         this.selectionFilter = SELECTION_FILTER.UNITS;
 
+        this.graphic = new Graphic();
+
+        this.mouse = new Mouse(this);
+
         this.ui = new UI();
 
         this.ui.showResourceDisplay();
@@ -24,20 +22,20 @@ class App extends EventEmitter2 {
 
         ws.on("message", message => this.messageSwitcher(message));
 
-        graphic.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
-        graphic.on("hoverOff", (oldIntersect, newIntersect) => {
+        this.graphic.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
+        this.graphic.on("hoverOff", (oldIntersect, newIntersect) => {
             oldIntersect.object.entity.emit("hoverOff", oldIntersect, newIntersect);
             if (newIntersect)
                 newIntersect.object.entity.emit("hoverOn", newIntersect);
         });
-        graphic.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
-        graphic.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
-        graphic.on("mouseDown", (intersect, e) => intersect.object.entity.emit("mouseDown", intersect, e));
-        graphic.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
+        this.graphic.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
+        this.graphic.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
+        this.graphic.on("mouseDown", (intersect, e) => intersect.object.entity.emit("mouseDown", intersect, e));
+        this.graphic.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
 
         Doodad.on("new", entity => this.newEntity(entity));
 
-        graphic.updates.push(this);
+        this.graphic.updates.push(this);
 
     }
 
@@ -87,18 +85,18 @@ class App extends EventEmitter2 {
     }
 
     showMesh(entity) {
-        if (entity._meshAdded) graphic.scene.remove(entity._meshAdded);
+        if (entity._meshAdded) this.graphic.scene.remove(entity._meshAdded);
         if (!entity.mesh) return;
 
         entity._meshAdded = entity.mesh;
-        graphic.scene.add(entity.mesh);
+        this.graphic.scene.add(entity.mesh);
     }
 
     hideMesh(entity) {
 
         if (!entity._meshAdded) return;
 
-        graphic.scene.remove(entity._meshAdded);
+        this.graphic.scene.remove(entity._meshAdded);
         entity._meshAdded = false;
 
     }
@@ -107,7 +105,7 @@ class App extends EventEmitter2 {
 
         this.entities.splice(this.entities.indexOf(entity), 1);
 
-        if (entity._meshAdded) graphic.scene.remove(entity._meshAdded);
+        if (entity._meshAdded) this.graphic.scene.remove(entity._meshAdded);
 
         if (entity.active) this.activeEntities.remove(entity);
 

@@ -77,8 +77,8 @@ class UI {
                 commandCard.appendChild(icon);
                 commandCard.appendChild(hotkey);
 
-                commandCard.style.left = x*2 + y + "em";
-                commandCard.style.top = y*1.7 + "em";
+                commandCard.style.left = x*2.25 + y + "em";
+                commandCard.style.top = y*1.95 + "em";
 
                 commandCard.icon = icon;
 

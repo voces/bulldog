@@ -1,5 +1,5 @@
 
-{class Graphic extends EventEmitter2 {
+class Graphic extends EventEmitter2 {
 
     constructor() {
         super();
@@ -68,12 +68,10 @@
         this.mouse = new THREE.Vector2();
         this.mouse.moved = false;
 
-        this.lastIntersect = Graphic.dummyIntersect;
+        this.lastIntersect = [];
 
         window.addEventListener("resize", () => this.onResize())
         document.addEventListener("mousemove", e => this.onMouseMove(e))
-        document.addEventListener("mousedown", e => this.onMouseDown(e))
-        document.addEventListener("mouseup", e => this.onMouseUp(e))
 
         this.lastTime = null;
 
@@ -97,22 +95,8 @@
 
     }
 
-    onMouseDown(e) {
-
-        if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
-            return;
-
-        if (this.lastIntersect) this.emit("mouseDown", this.lastIntersect, e);
-
-    }
-
-    onMouseUp(e) {
-
-        if (e.target.constructor !== HTMLCanvasElement && e.target.className !== "game")
-            return;
-
-        if (this.lastIntersect) this.emit("mouseUp", this.lastIntersect, e);
-
+    intersect() {
+        return this.lastIntersect;
     }
 
     mouseEvents() {
@@ -124,47 +108,7 @@
 
         //Intersect calculation
         this.raycaster.setFromCamera(this.mouse, this.camera);
-        let intersect = this.raycaster.intersectObjects(this.scene.children)[0];
-
-        //Exit if no intersect
-        if (!intersect) {
-
-            //Ignores dummies (no previous intersect)
-            if (this.lastIntersect) this.emit("hoverOff", this.lastIntersect);
-
-            this.lastIntersect = null;
-            return;
-
-        }
-
-        //A new object is being intersected
-        if (!this.lastIntersect || this.lastIntersect.object !== intersect.object) {
-
-            //Ignores dummies (no previous intersect)
-            if (this.lastIntersect) this.emit("hoverOff", this.lastIntersect, intersect);
-
-            //Make sure we intersected something that is handled by the engine
-            else this.emit("hoverOn", intersect);
-
-            this.lastIntersect = intersect;
-
-            return;
-
-        }
-
-        //Same object being intersected...
-        if (this.lastIntersect) {
-
-            //But a new face of the same object! (useful for Terrain)
-            if (intersect.face != this.lastIntersect.face)
-                this.emit("hoverFace", intersect, this.lastIntersect);
-
-            //Emit hover event
-            else this.emit("hover", intersect)
-
-            this.lastIntersect = intersect;
-
-        }
+        this.lastIntersect = this.raycaster.intersectObjects(this.scene.children);
 
     }
 
@@ -190,7 +134,6 @@
 
 Graphic.dummyIntersect = null;
 
-window.graphic = new Graphic();}
 // graphic.scene.add(new THREE.Mesh(
 //     new THREE.TorusKnotGeometry(20, 5, 256, 32),
 //     new THREE.MeshNormalMaterial()));
