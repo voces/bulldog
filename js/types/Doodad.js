@@ -125,4 +125,8 @@ class Doodad extends EventEmitter2 {
 
 Doodad.id = 0;
 
+FILTER.ALL = {
+    type: Doodad
+};
+
 emitterMixin(Doodad);

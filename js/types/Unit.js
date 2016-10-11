@@ -6,6 +6,8 @@ class Unit extends Destructible {
         this.owner = props.owner;
         this._selected = false;
 
+        this.interaction = props.interaction || Unit.interaction;
+
         this.on("autoGround", (arena, intersect, e) => this.autoGround(arena, intersect, e));
 
         this.commandDeck = new CommandDeck();
@@ -28,6 +30,10 @@ class Unit extends Destructible {
         arena.terrain.tilemap.nearestPathing(intersect.point.x, intersect.point.y, this.flying ? FOOTPRINT_TYPE.NOT_BUILDABLE : NOT_BUILDABLE.NOT_FLYABLE, this.radius);
     }
 
+    walk(intersect) {
+        console.log("walk", intersect);
+    }
+
     get selected() { return this._selected; }
     set selected(value) {
         value = value ? true : false;
@@ -39,5 +45,26 @@ class Unit extends Destructible {
     }
 
 }
+
+FILTER.UNITS = {
+    type: Unit
+};
+
+Unit.interaction = [
+    [{filter: entity => entity instanceof Unit, callback: intersect => app.mouse.select(intersect)}],
+
+    [{filter: () => false}],
+
+    [
+        {filter: entity => entity instanceof Terrain, callback: intersect => {
+            for (let i = 0; i < app.mouse.selection.length; i++)
+                app.mouse.selection[i].walk(intersect.point);
+
+        }}, {filter: entity => entity instanceof Destructible, callback: intersect => {
+            for (let i = 0; i < app.mouse.selection.length; i++)
+                app.mouse.selection[i].walk(app.mouse.topIntersect([{filter: entity => entity instanceof Terrain}]).point);
+        }}
+    ]
+];
 
 emitterMixin(Unit);

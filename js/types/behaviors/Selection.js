@@ -5,7 +5,6 @@ class Selection extends Behavior {
 
         this.entity.on("hoverOn", intersect => this.onHoverOn(intersect));
         this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
-        this.entity.on("mouseUp", (intersect, e) => this.onMouseUp(intersect, e));
 
         app.mouse.on("selection", entities =>
             entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
@@ -27,9 +26,6 @@ class Selection extends Behavior {
 
     onHoverOn(intersect) {
 
-        if (app.selectionFilter.type)
-            if (!(this.entity instanceof app.selectionFilter.type)) return;
-
         this.show(0xFFFF00);
 
         app.ui.container.style.cursor = "pointer";
@@ -46,18 +42,10 @@ class Selection extends Behavior {
 
     }
 
-    onMouseUp(intersect, e) {
-
-        //Left click only
-        if (e.button !== 0) return;
-
-        if (app.selectionFilter.type)
-            if (!(this.entity instanceof app.selectionFilter.type)) return;
-
-        app.emit("selection", [this.entity]);
-    }
-
     select() {
+        if (app.mouse.selection[0] === this.entity)
+            app.mouse.interaction = this.entity.interaction;
+
         if (this.entity.selected) return;
 
         this.entity.selected = true;

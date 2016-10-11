@@ -9,8 +9,6 @@ class App extends EventEmitter2 {
         this.entities = [];
         this.activeEntities = new Set();
 
-        this.selectionFilter = SELECTION_FILTER.UNITS;
-
         this.graphic = new Graphic();
 
         this.mouse = new Mouse(this);

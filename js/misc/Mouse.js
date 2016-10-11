@@ -1,24 +1,15 @@
 
-const SELECTION_FILTER = {
-    UNITS: {
-        type: Unit
-    },
-    NONE: {
-        type: class None {}
-    }
-};
-
 class Mouse extends EventEmitter2 {
     constructor() {
         super({maxListeners: 20});
 
-        this.filter = SELECTION_FILTER.UNITS;
+        this.filter = FILTER.UNITS;
         this.intersection = null;
 
         this.interaction = [
-            {filter: SELECTION_FILTER.UNITS, callback: intersect => this.select(intersect)},
-            {filter: SELECTION_FILTER.NONE},
-            {filter: SELECTION_FILTER.NONE}
+            [{filter: entity => entity instanceof Unit, callback: intersect => this.select(intersect)}],
+            [{filter: () => false}],
+            [{filter: () => false}]
         ];
 
         document.addEventListener("mousemove", e => this.onMouseMove(e));
@@ -48,14 +39,7 @@ class Mouse extends EventEmitter2 {
         }
 
         //Grab the top-most intersection that matches the primary button filter (0, left)
-        let intersect;
-        for (let i = 0; i < intersects.length; i++) {
-            if (this.interaction[0].filter.type && !(intersects[i].object.entity instanceof this.interaction[0].filter.type))
-                continue;
-
-            intersect = intersects[i];
-            break;
-        }
+        let intersect = this.topIntersect(this.interaction[0]);
 
         //We have no top-most intersection that matches the primary button filter, so alert hoverOff
         if (!intersect) {
@@ -97,11 +81,31 @@ class Mouse extends EventEmitter2 {
 
     }
 
-    topIntersect(filter) {
+    topIntersect(interaction, filterIndex) {
 
+        // console.log(interaction, interaction[]);
+
+        //No specific sub-action, check all
+        if (typeof filterIndex === "undefined") {
+            for (let i = 0; i < this.lastIntersects.length; i++)
+                for (let n = 0; n < interaction.length; n++) {
+                    if (!interaction[n].filter(this.lastIntersects[i].object.entity))
+                        continue;
+
+                    this.topIntersectFilter = n;
+
+                    return this.lastIntersects[i];
+                }
+
+            return null;
+        }
+
+        //Looking at a specific sub-action, check it
         for (let i = 0; i < this.lastIntersects.length; i++) {
-            if (filter.type && !(this.lastIntersects[i].object.entity instanceof filter.type))
+            if (!interaction[filterIndex].filter(this.lastIntersects[i].object.entity))
                 continue;
+
+            this.topIntersectFilter = filterIndex;
 
             return this.lastIntersects[i];
         }
@@ -112,28 +116,16 @@ class Mouse extends EventEmitter2 {
 
     onMouseDown(e) {
 
-        //we already have the top intersect for left-click, so call the callback
-        if (e.button === 0) {
-
-            if (this.lastIntersect) this.interaction[0].callback(this.lastIntersect);
-            else console.error("Bad click!");
-
-
-        //Otherwise grab the top and call the callback
-        } else {
-
-            let intersect = this.topIntersect(this.interaction[e.button].filter);
-            if (intersect) this.interaction[e.button].callback(intersect);
-            // else if (this.interaction[e.button].filter.type.indexOf(Terrain))
-            else console.error("Bad click!");
-
-        }
+        let intersect = this.topIntersect(this.interaction[e.button]);
+        if (intersect) this.interaction[e.button][this.topIntersectFilter].callback(intersect);
+        else console.error("Bad click!");
 
     }
 
     select(intersect) {
 
-        this.emit("selection", [intersect.object.entity]);
+        this.selection = [intersect.object.entity];
+        this.emit("selection", this.selection);
 
     }
 
