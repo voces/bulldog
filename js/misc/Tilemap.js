@@ -27,7 +27,6 @@ class Tilemap {
 
         this.tiles = [];
 
-        //[x][y]
         this.grid = Array(width + 1);
         for (let i = 0; i < width + 1; i++)
             this.grid[i] = Array(height + 1);
@@ -103,4 +102,61 @@ class Tilemap {
         console.log("Tilemap.nearestPathing", x, y);
 
     }
+
+    xWorldToTile(x) { return Math.floor((x + this.realWidth / 2) / 8); }
+    yWorldToTile(y) { return this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1 }
+
+    xTileToWorld(x) { return (x + 0.5) * 8 - (this.realWidth / 2); }
+    yTileToWorld(y) { return (-y - 1 + this.realHeight / 8 + 0.5) * 8 - this.realHeight / 2; }
+
+    _pathable(x, y, map, type) {
+
+
+
+    }
+
+    pathable(x, y, map = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
+
+        let xTile = this.xWorldToTile(x),
+            yTile = this.yWorldToTile(y);
+
+        console.log("x:", x, "y:", y);
+        console.log("xTile:", xTile, "yTile:", yTile, "map:", map);
+        console.log("x:", this.xTileToWorld(xTile), "y:", this.yTileToWorld(yTile));
+
+        if (typeof map === "number") {
+
+            let radius = map,
+                tileRadius = map / 4,
+                xMiss = x - this.xTileToWorld(xTile),
+                yMiss = y - this.yTileToWorld(yTile);
+
+            let minX = Math.max(-tileRadius, -xTile),
+                maxX = Math.min(tileRadius, this.width - xTile - 1),
+                minY = Math.max(-tileRadius, -yTile),
+                maxY = Math.min(tileRadius, this.height - yTile - 1);
+
+            map = [];
+
+            console.log(xMiss, yMiss);
+            console.log(minX, maxX, minY, maxY);
+
+            for (let tY = minY; tY <= maxY; tY++)
+                for (let tX = minX; tX <= maxX; tX++) {
+                    let yDelta = tY < 0 ? (tY + 1) * 8 + yMiss : tY > 0 ? tY * -8 + yMiss : 0,
+                        xDelta = tX < 0 ? (tX + 1) * -8 - xMiss : tX > 0 ? tX * 8 - xMiss : 0;
+
+                    console.log("(", tX, tY, ")", xDelta, yDelta, Math.sqrt(xDelta**2 + yDelta**2) < radius);
+
+                    if (Math.sqrt(xDelta**2 + yDelta**2) < radius)
+                        map.push(type);
+                    else map.push(0);
+
+                }
+        }
+
+        console.log(map);
+
+    }
+
 }

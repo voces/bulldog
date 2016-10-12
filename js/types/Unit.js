@@ -8,7 +8,8 @@ class Unit extends Destructible {
 
         this.interaction = props.interaction || Unit.interaction;
 
-        this.on("autoGround", (arena, intersect, e) => this.autoGround(arena, intersect, e));
+        if (props.movementSpeed)
+            new Walk({entity: this, movementspeed: props.movementSpeed});
 
         this.commandDeck = new CommandDeck();
 
@@ -52,19 +53,8 @@ FILTER.UNITS = {
 
 Unit.interaction = [
     [{filter: entity => entity instanceof Unit, callback: intersect => app.mouse.select(intersect)}],
-
-    [{filter: () => false}],
-
-    [
-        {filter: entity => entity instanceof Terrain, callback: intersect => {
-            for (let i = 0; i < app.mouse.selection.length; i++)
-                app.mouse.selection[i].walk(intersect.point);
-
-        }}, {filter: entity => entity instanceof Destructible, callback: intersect => {
-            for (let i = 0; i < app.mouse.selection.length; i++)
-                app.mouse.selection[i].walk(app.mouse.topIntersect([{filter: entity => entity instanceof Terrain}]).point);
-        }}
-    ]
+    [],
+    []
 ];
 
 emitterMixin(Unit);

@@ -5,7 +5,7 @@ class SelectionCircle extends Doodad {
 
         super(props);
 
-        let geometry = new THREE.CircleGeometry(this.radius*4, 64),
+        let geometry = new THREE.CircleGeometry(this.radius, 64),
             material = new THREE.LineBasicMaterial({
                 color: props.rgb
             });
@@ -14,7 +14,7 @@ class SelectionCircle extends Doodad {
         this.mesh = new THREE.Line(geometry, material);
 
         // console.log(app.game.round.arena.terrain.minHeight);
-        this.mesh.position.z = app.terrain ? app.terrain.minHeight(this.x, this.y, this.radius) + 1 : 0;
+        this.mesh.position.z = app.terrain ? app.terrain.minHeight(this.x, this.y, this.radius/4) + 1 : 0;
 
         this.visible = false;
 

@@ -3,14 +3,10 @@ if (!window.loader) window.loader = new THREE.JSONLoader();
 
 class Sheep extends Unit {
     constructor(props) {
-        props.footprint = {
-            map: null,
-            width: 0,
-            height: 0,
-            radius: 4
-        };
-
+        props.radius = 4;
+        // props.radius = 4 * 4;
         props.builds = props.builds || Sheep.builds;
+        props.movementSpeed = props.movementSpeed || Sheep.movementSpeed;
 
         super(props);
 
@@ -38,5 +34,7 @@ Sheep.builds = [
     {type: WideFarm},
     {type: HardFarm}
 ];
+
+Sheep.movementSpeed = 380;
 
 TYPES.Sheep = Sheep;
