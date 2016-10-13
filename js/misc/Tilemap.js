@@ -109,55 +109,70 @@ class Tilemap {
     xTileToWorld(x) { return (x + 0.5) * 8 - (this.realWidth / 2); }
     yTileToWorld(y) { return (-y - 1 + this.realHeight / 8 + 0.5) * 8 - this.realHeight / 2; }
 
-    _pathable(x, y, map, type) {
+    updateTilemap() {
 
+        for (let i = 0; i < app.dirtyEntities.length; i++)
+            if (app.dirtyEntities[i] instanceof Destructible)
+                app.dirtyEntities[i].dirty = false;
+            else {
 
+                let entity = app.dirtyEntities[i],
+                    map = entity.map,
+                    x = xWorldToTile(entity.x),
+                    y = xWorldToTile(entity.y);
+
+                app.dirtyEntities[i].dirty = false;
+
+                
+
+            }
+
+        app.dirtyEntities = [];
 
     }
 
     pathable(x, y, map = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
 
+        if (typeof map === number) map = this.pointToMap(x, y, map, type);
+
+        this.updateTilemap();
+
+    }
+
+    pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
+
         let xTile = this.xWorldToTile(x),
-            yTile = this.yWorldToTile(y);
+            yTile = this.yWorldToTile(y),
 
-        // console.log("x:", x, "y:", y);
-        // console.log("xTile:", xTile, "yTile:", yTile, "map:", map);
-        // console.log("x:", this.xTileToWorld(xTile), "y:", this.yTileToWorld(yTile));
+            map = [],
 
-        if (typeof map === "number") {
+            xMiss = x - this.xTileToWorld(xTile) + 4,
+            yMiss = 8 - (y - this.yTileToWorld(yTile) + 4),
 
-            let radius = map,
-                tileRadius = map / 8,
-                xMiss = x - this.xTileToWorld(xTile) + 4,
-                yMiss = 8 - (y - this.yTileToWorld(yTile) + 4);
+            minX = Math.max(this.xWorldToTile(x - radius) - xTile, -xTile),
+            maxX = Math.min(this.xWorldToTile(x + radius) - xTile, this.width - xTile - 1),
+            minY = Math.max(this.yWorldToTile(y + radius) - yTile, -yTile),
+            maxY = Math.min(this.yWorldToTile(y - radius) - yTile, this.height - yTile - 1);
 
-            let minX = Math.max(this.xWorldToTile(x - radius) - xTile, -xTile),
-                maxX = Math.min(this.xWorldToTile(x + radius) - xTile, this.width - xTile - 1),
-                minY = Math.max(this.yWorldToTile(y + radius) - yTile, -yTile),
-                maxY = Math.min(this.yWorldToTile(y - radius) - yTile, this.height - yTile - 1);
+        // console.log(xMiss, yMiss);
+        // console.log(minX, maxX, minY, maxY);
 
-            map = [];
+        for (let tY = minY; tY <= maxY; tY++)
+            for (let tX = minX; tX <= maxX; tX++) {
+                let yDelta = tY < 0 ? (tY + 1) * 8 + yMiss : tY > 0 ? tY * -8 + yMiss : 0,
+                    xDelta = tX < 0 ? (tX + 1) * -8 - xMiss : tX > 0 ? tX * 8 - xMiss : 0;
 
-            // console.log(xMiss, yMiss);
-            // console.log(minX, maxX, minY, maxY);
+                // console.log("(", tX, tY, ")", Math.sqrt(xDelta**2 + yDelta**2) < radius);
+                // console.log("xDelta:", tX < 0 ? "a" : tX > 0 ? "b" : "c", tX < 0 ? (tX + 1) * -8 : tX > 0 ? tX * 8 : 0, xDelta);
+                // console.log("yDelta:", tY < 0 ? "a" : tY > 0 ? "b" : "c", tY < 0 ? (tY + 1) * 8 : tY > 0 ? tY * -8: 0, yDelta);
 
-            for (let tY = minY; tY <= maxY; tY++)
-                for (let tX = minX; tX <= maxX; tX++) {
-                    let yDelta = tY < 0 ? (tY + 1) * 8 + yMiss : tY > 0 ? tY * -8 + yMiss : 0,
-                        xDelta = tX < 0 ? (tX + 1) * -8 - xMiss : tX > 0 ? tX * 8 - xMiss : 0;
+                if (Math.sqrt(xDelta**2 + yDelta**2) < radius)
+                    map.push(type);
+                else map.push(0);
 
-                    // console.log("(", tX, tY, ")", Math.sqrt(xDelta**2 + yDelta**2) < radius);
-                    // console.log("xDelta:", tX < 0 ? "a" : tX > 0 ? "b" : "c", tX < 0 ? (tX + 1) * -8 : tX > 0 ? tX * 8 : 0, xDelta);
-                    // console.log("yDelta:", tY < 0 ? "a" : tY > 0 ? "b" : "c", tY < 0 ? (tY + 1) * 8 : tY > 0 ? tY * -8: 0, yDelta);
+            }
 
-                    if (Math.sqrt(xDelta**2 + yDelta**2) < radius)
-                        map.push(type);
-                    else map.push(0);
-
-                }
-        }
-
-        console.log(map);
+        return map;
 
     }
 

@@ -31,8 +31,7 @@ class Walk extends Behavior {
     }
 
     walk(point) {
-        console.log("walk", point);
-        app.terrain.tilemap.pathable(point.x, point.y, this.entity.radius);
+        app.terrain.tilemap.tilemap(point.x, point.y, this.entity.radius);
     }
 
 }

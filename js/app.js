@@ -8,6 +8,7 @@ class App extends EventEmitter2 {
 
         this.entities = [];
         this.activeEntities = new Set();
+        this.dirtyEntities = [];
 
         this.graphic = new Graphic();
 
@@ -79,6 +80,9 @@ class App extends EventEmitter2 {
         //If the entity is put through the update loop
         entity.on("active", () => this.activeEntities.add(entity));
         entity.on("inactive", () => this.activeEntities.remove(entity));
+
+        entity.on("dirty", () => this.dirtyEntities.push(entity));
+        this.dirtyEntities.push(entity);
 
     }
 

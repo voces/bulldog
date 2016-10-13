@@ -17,6 +17,8 @@ class Doodad extends EventEmitter2 {
         this.behaviors = [];
         this.activeBehaviors = [];
 
+        this._dirty = true;
+
         this._visible = typeof props.visible === "boolean" ? props.visible : true;
 
         Doodad.emit("new", this);
@@ -87,6 +89,7 @@ class Doodad extends EventEmitter2 {
     set x(value) {
         this._x = value;
         if (this.mesh) this.mesh.position.x = value;
+        this.dirty = true;
     }
 
     get x() { return this._x; }
@@ -94,6 +97,7 @@ class Doodad extends EventEmitter2 {
     set y(value) {
         this._y = value;
         if (this.mesh) this.mesh.position.y = value;
+        this.dirty = true;
     }
 
     get y() { return this._y; }
@@ -118,6 +122,18 @@ class Doodad extends EventEmitter2 {
 
         for (let i = 0; i < this.activeBehaviors.length; i++)
             this.activeBehaviors[i].update(delta);
+
+    }
+
+    set dirty(value) {
+
+        if (!value) return this._dirty = false;
+
+        if (this._dirty === true) return;
+
+        this._dirty = true;
+
+        this.emit("dirty");
 
     }
 

@@ -14,6 +14,8 @@ class Structure extends Behavior {
 
         this.entity.radius = Math.max(this.footprint.width, this.footprint.height) * 4;
 
+        this.entity.structure = this;
+
         Object.defineProperty(this.entity, "x", {
             set: value => this.setX(value),
             get: () => this.entity._x
@@ -32,6 +34,7 @@ class Structure extends Behavior {
 
         this.entity._x = value;
         if (this.entity.mesh) this.entity.mesh.position.x = this.entity._x;
+        this.dirty = true;
     }
 
     setY(value) {
@@ -40,6 +43,7 @@ class Structure extends Behavior {
 
         this.entity._y = value;
         if (this.entity.mesh) this.entity.mesh.position.y = value;
+        this.dirty = true;
     }
 
 }

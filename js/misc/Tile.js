@@ -6,6 +6,7 @@ class Tile {
         this.pathing = pathing;
         this.vertices = vertices;
         this.faces = faces;
+        this.nodes = [];
 
     }
 
