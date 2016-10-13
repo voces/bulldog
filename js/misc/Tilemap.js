@@ -120,33 +120,35 @@ class Tilemap {
         let xTile = this.xWorldToTile(x),
             yTile = this.yWorldToTile(y);
 
-        console.log("x:", x, "y:", y);
-        console.log("xTile:", xTile, "yTile:", yTile, "map:", map);
-        console.log("x:", this.xTileToWorld(xTile), "y:", this.yTileToWorld(yTile));
+        // console.log("x:", x, "y:", y);
+        // console.log("xTile:", xTile, "yTile:", yTile, "map:", map);
+        // console.log("x:", this.xTileToWorld(xTile), "y:", this.yTileToWorld(yTile));
 
         if (typeof map === "number") {
 
             let radius = map,
-                tileRadius = map / 4,
-                xMiss = x - this.xTileToWorld(xTile),
-                yMiss = y - this.yTileToWorld(yTile);
+                tileRadius = map / 8,
+                xMiss = x - this.xTileToWorld(xTile) + 4,
+                yMiss = 8 - (y - this.yTileToWorld(yTile) + 4);
 
-            let minX = Math.max(-tileRadius, -xTile),
-                maxX = Math.min(tileRadius, this.width - xTile - 1),
-                minY = Math.max(-tileRadius, -yTile),
-                maxY = Math.min(tileRadius, this.height - yTile - 1);
+            let minX = Math.max(this.xWorldToTile(x - radius) - xTile, -xTile),
+                maxX = Math.min(this.xWorldToTile(x + radius) - xTile, this.width - xTile - 1),
+                minY = Math.max(this.yWorldToTile(y + radius) - yTile, -yTile),
+                maxY = Math.min(this.yWorldToTile(y - radius) - yTile, this.height - yTile - 1);
 
             map = [];
 
-            console.log(xMiss, yMiss);
-            console.log(minX, maxX, minY, maxY);
+            // console.log(xMiss, yMiss);
+            // console.log(minX, maxX, minY, maxY);
 
             for (let tY = minY; tY <= maxY; tY++)
                 for (let tX = minX; tX <= maxX; tX++) {
                     let yDelta = tY < 0 ? (tY + 1) * 8 + yMiss : tY > 0 ? tY * -8 + yMiss : 0,
                         xDelta = tX < 0 ? (tX + 1) * -8 - xMiss : tX > 0 ? tX * 8 - xMiss : 0;
 
-                    console.log("(", tX, tY, ")", xDelta, yDelta, Math.sqrt(xDelta**2 + yDelta**2) < radius);
+                    // console.log("(", tX, tY, ")", Math.sqrt(xDelta**2 + yDelta**2) < radius);
+                    // console.log("xDelta:", tX < 0 ? "a" : tX > 0 ? "b" : "c", tX < 0 ? (tX + 1) * -8 : tX > 0 ? tX * 8 : 0, xDelta);
+                    // console.log("yDelta:", tY < 0 ? "a" : tY > 0 ? "b" : "c", tY < 0 ? (tY + 1) * 8 : tY > 0 ? tY * -8: 0, yDelta);
 
                     if (Math.sqrt(xDelta**2 + yDelta**2) < radius)
                         map.push(type);

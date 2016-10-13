@@ -35,8 +35,8 @@ class Terrain extends Doodad {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
                 this.geometry.vertices[i].z = props.heightMap[i];
             }
-            // this.geometry.vertices[i].x += 2 * Math.random();
-            // this.geometry.vertices[i].y += 2 * Math.random();
+            this.geometry.vertices[i].x += 2 * Math.random();
+            this.geometry.vertices[i].y += 2 * Math.random();
         }
 
         //Rotate some squares (makes stuff look a bit less uniform)
