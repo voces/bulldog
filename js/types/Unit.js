@@ -6,7 +6,7 @@ class Unit extends Destructible {
         this.owner = props.owner;
         this._selected = false;
 
-        this.interaction = props.interaction || Unit.interaction;
+        this.interaction = props.interaction || [...Unit.interaction.map(row => [...row])];
 
         if (props.movementSpeed)
             new Walk({entity: this, movementspeed: props.movementSpeed});
@@ -29,10 +29,6 @@ class Unit extends Destructible {
     autoGround(arena, intersect, e) {
         console.log(arena, intersect, e);
         arena.terrain.tilemap.nearestPathing(intersect.point.x, intersect.point.y, this.flying ? FOOTPRINT_TYPE.NOT_BUILDABLE : NOT_BUILDABLE.NOT_FLYABLE, this.radius);
-    }
-
-    walk(intersect) {
-        console.log("walk", intersect);
     }
 
     get selected() { return this._selected; }

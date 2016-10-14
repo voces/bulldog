@@ -73,7 +73,7 @@ new Arena({
                 y: -11 * 8 + nudgeH
             }
         ], Farm: [{x: -2 * 8 + nudgeW, y: nudgeH}],
-        TinyFarm: [{x: -4 * 8 + nudgeW, y: nudgeH}],
+        TinyFarm: [{x: -4 * 8 + nudgeW, y: nudgeH, movementSpeed: 100}],
         WideFarm: [{x: 2 * 8 + nudgeW, y: nudgeH}],
         HardFarm: [{x: 6 * 8 + nudgeW, y: nudgeH}]
     },

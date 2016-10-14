@@ -31,6 +31,9 @@ class Walk extends Behavior {
     }
 
     walk(point) {
+
+        let target = app.terrain.tilemap.nearestPathing(point.x, point.y, this.entity);
+
         app.terrain.tilemap.pointToTilemap(point.x, point.y, this.entity.radius);
     }
 

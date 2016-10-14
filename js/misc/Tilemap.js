@@ -35,35 +35,65 @@ class Tilemap {
 
         this.createTile(0, 0);
 
-        this.updateTilemap();
-
         for (let i = 0; i < this.tiles.length; i++) {
             let tile = this.tiles[i],
                 x = tile.x,
                 y = tile.y,
 
                 posMask = (x > 0 ? 1 : 0) +
-                    (x < this.width ? 2 : 0) +
+                    (x < this.width - 1 ? 2 : 0) +
                     (y > 0 ? 4 : 0) +
-                    (y < this.height ? 8 : 0);
+                    (y < this.height - 1 ? 8 : 0);
 
-                tile.tiles = [];
+            if ((posMask & 1) === 1) {
+                let leftTile = this.createTile(x-1, y);
+                if (leftTile) {
+                    tile.left = leftTile;
+                    tile.tiles.push(leftTile);
+                } else console.log("left");
+            }
 
-            if ((posMask & 1) === 1)
-                tile.tiles.push(tile.left = this.createTile(x-1, y));
-            if ((posMask & 2) === 2)
-                tile.tiles.push(tile.right = this.createTile(x+1, y));
-            if ((posMask & 4) === 4)
-                tile.tiles.push(tile.top = this.createTile(x, y-1));
-            if ((posMask & 5) === 5)
-                tile.tiles.push(tile.topLeft = this.createTile(x-1, y-1));
-            if ((posMask & 6) === 6)
-                tile.tiles.push(tile.topRight = this.createTile(x+1, y-1));
-            if ((posMask & 8) === 8)
-                tile.tiles.push(tile.bottom = this.createTile(x, y+1));
-            if ((posMask & 9) === 9) tile.tiles.push(tile.bottomLeft = this.createTile(x-1, y+1));
-            if ((posMask & 10) === 10) tile.tiles.push(tile.bottomRight = this.createTile(x+1, y+1));
+            if ((posMask & 2) === 2) {
+                let rightTile = this.createTile(x+1, y);
+                if (rightTile) {
+                    tile.right = rightTile;
+                    tile.tiles.push(rightTile);
+                } else console.log("right");
+            }
+
+            if ((posMask & 4) === 4) {
+                let topTile = this.createTile(x, y-1);
+                if (topTile) {
+                    tile.top = topTile;
+                    tile.tiles.push(topTile);
+                } else console.log("top");
+            }
+
+            if ((posMask & 8) === 8) {
+                let bottomTile = this.createTile(x, y+1);
+                if (bottomTile) {
+                    tile.bottom = bottomTile;
+                    tile.tiles.push(bottomTile);
+                } else console.log("bottom");
+            }
+
+
+            // if ((posMask & 2) === 2)
+            //     tile.tiles.push(tile.right = this.createTile(x+1, y));
+            // if ((posMask & 4) === 4)
+            //     tile.tiles.push(tile.top = this.createTile(x, y-1));
+            // if ((posMask & 5) === 5)
+            //     tile.tiles.push(tile.topLeft = this.createTile(x-1, y-1));
+            // if ((posMask & 6) === 6)
+            //     tile.tiles.push(tile.topRight = this.createTile(x+1, y-1));
+            // if ((posMask & 8) === 8)
+            //     tile.tiles.push(tile.bottom = this.createTile(x, y+1));
+            // if ((posMask & 9) === 9) tile.tiles.push(tile.bottomLeft = this.createTile(x-1, y+1));
+            // if ((posMask & 10) === 10) tile.tiles.push(tile.bottomRight = this.createTile(x+1, y+1));
         }
+
+        for (let i = 0; i < this.tiles.length; i++)
+            this.tiles[i].updateMap();
 
     }
 
@@ -107,20 +137,27 @@ class Tilemap {
         x = Math.floor((x + this.realWidth / 2) / 8);
         y = this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1;
 
-        // console.log(x, y, this.grid[x][y]);
-
         return this.grid[x][y];
 
     }
 
-    nearestPathing(x, y, type, radius) {
+    nearestPathing(x, y, entity) {
+
+        let minimalTilemap;
+
+        if (entity.structure)
+            minimalTilemap = entity.tilemap;
+
+        else {
+
+            // console.log(entity.radius);
+
+            minimalTilemap = this.pointToTilemap(entity.radius, entity.radius, entity.radius);
+
+        }
 
 
-
-        x = (x + this.realWidth / 2) / 8;
-        y = this.realHeight / 8 - (y + this.realHeight / 2) / 8 - 1;
-
-        console.log("Tilemap.nearestPathing", x, y);
+        // console.log(minimalTilemap)
 
     }
 
@@ -147,11 +184,6 @@ class Tilemap {
 
                 app.dirtyEntities[i].dirty = false;
 
-                // console.log(entity, x, y);
-
-                // console.log("xRange:", x + footprint.left, x + footprint.left + footprint.width);
-                // console.log("yRange:", y + footprint.top, y + footprint.top + footprint.height);
-
                 if (entity.tiles)
                     for (let n = 0; n < entity.tiles.length; n++) {
                         tiles.add(entity.tiles[n]);
@@ -176,15 +208,12 @@ class Tilemap {
         app.dirtyEntities = [];
 
         tiles = Array.from(tiles);
-        // for (let i = 0; i < 1; i++) {
         for (let i = 0; i < tiles.length; i++) {
             tiles[i].updateMap();
 
             let r = -0.5,
                 g = -0.5,
                 b = -0.5;
-
-            // console.log(tiles[i].pathing);
 
             if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
                 r = 0.5;
@@ -197,15 +226,9 @@ class Tilemap {
 
     }
 
-    pathable(x, y, map = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
-
-        if (typeof map === number) map = this.pointToMap(x, y, map, type);
-
-        this.updateTilemap();
-
-    }
-
     pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
+
+        radius -= Number.EPSILON;
 
         let xTile = this.xWorldToTile(x),
             yTile = this.yWorldToTile(y),

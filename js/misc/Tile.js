@@ -8,14 +8,12 @@ class Tile {
         this.vertices = vertices;
         this.faces = faces;
         this.nodes = [];
+        this.tiles = [];
 
         this.entities = new Map();
 
-        if (this.tileType === 0)
-            this.pathing = FOOTPRINT_TYPE.OBSTACLE;
-        else if (this.tileType < 3)
-            this.pathing = FOOTPRINT_TYPE.NOT_BUILDABLE;
-        
+        this.pathing = FOOTPRINT_TYPE.NOT_WALKABLE;
+
     }
 
     get minHeight() {
@@ -74,6 +72,8 @@ class Tile {
 
     updateMap() {
 
+        let wasWalkable = this.walkable;
+
         if (this.tileType === 0)
             this.pathing = FOOTPRINT_TYPE.OBSTACLE;
         else if (this.tileType < 2)
@@ -83,6 +83,30 @@ class Tile {
 
         for (let [entity, mapIndex] of this.entities)
             this.pathing |= entity.tilemap.map[mapIndex];
+
+        if (wasWalkable && !this.walkable) {
+
+            // console.log(this);
+
+            for (let i = 0; i < this.tiles.length; i++) {
+                let index = this.tiles[i].nodes.indexOf(this);
+                if (index !== -1) this.tiles[i].nodes.splice(index, 1);
+            }
+
+            this.nodes = [];
+
+        } else if (!wasWalkable && this.walkable) {
+
+            // console.log("now walkable", this);
+
+            for (let i = 0; i < this.tiles.length; i++) {
+                let index = this.tiles[i].nodes.indexOf(this);
+                if (index === -1) this.tiles[i].nodes.push(this);
+            }
+
+            this.nodes = [...this.tiles.filter(tile => tile.walkable)];
+
+        }
 
         // console.log("update", this.pathing);
 
