@@ -31,7 +31,7 @@ class Walk extends Behavior {
     }
 
     walk(point) {
-        app.terrain.tilemap.tilemap(point.x, point.y, this.entity.radius);
+        app.terrain.tilemap.pointToTilemap(point.x, point.y, this.entity.radius);
     }
 
 }

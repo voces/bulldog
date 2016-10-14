@@ -8,9 +8,14 @@ class Structure extends Behavior {
         else this.footprint = {
             map: [FOOTPRINT_TYPE.OBSTACLE],
             width: 1,
-            height: 1,
-            radius: 0
+            height: 1
         };
+
+        if (typeof this.footprint.top === "undefined")
+            this.footprint.top = Math.ceil(this.footprint.height / -2 + 0.5);
+
+        if (typeof this.footprint.left === "undefined")
+            this.footprint.left = Math.ceil(this.footprint.width / -2);
 
         this.entity.radius = Math.max(this.footprint.width, this.footprint.height) * 4;
 

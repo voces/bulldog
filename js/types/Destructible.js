@@ -17,16 +17,16 @@ class Destructible extends Doodad {
 
     get tilemap() {
 
-        if (this.structure) return this.structure.footprint.map;
+        if (this.structure) return this.structure.footprint;
         else if (app.terrain) {
             if (this.x === this._tilemap.x && this.y === this._tilemap.y)
-                return this._tilemap.map;
+                return this._tilemap.footprint;
 
             this._tilemap.x = this.x;
             this._tilemap.y = this.y;
-            this._tilemap.map = app.terrain.tilemap.pointToTilemap(this.x, this.y, this.radius);
+            this._tilemap.footprint = app.terrain.tilemap.pointToTilemap(this.x, this.y, this.radius);
 
-            return this._tilemap.map;
+            return this._tilemap.footprint;
         }
 
     }

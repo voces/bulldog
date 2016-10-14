@@ -18,6 +18,8 @@ class Tilemap {
         this.realWidth = width*8;
         this.realHeight = height*8;
 
+        this.geometry = geometry;
+
         this.vertices = geometry.vertices;
         this.faces = geometry.faces;
         this.orientationMap = orientationMap;
@@ -32,6 +34,8 @@ class Tilemap {
             this.grid[i] = Array(height + 1);
 
         this.createTile(0, 0);
+
+        this.updateTilemap();
 
         for (let i = 0; i < this.tiles.length; i++) {
             let tile = this.tiles[i],
@@ -70,8 +74,25 @@ class Tilemap {
         if (x < 0 || y < 0 || x === this.width || y === this.height) return;
 
         let vertexIndex = y*(this.width+1) + x,
-            faceIndex = y*this.width + x,
-            tile = new Tile(x, y, this.tilemap[`${x},${y}`], [this.vertices[vertexIndex], this.vertices[vertexIndex+1], this.vertices[vertexIndex+this.width+1], this.vertices[vertexIndex+this.width+2]], [this.faces[faceIndex], this.faces[faceIndex+1]]);
+            faceIndex = y*this.width*2 + x*2,
+            tile = new Tile(
+                this,
+                x, y,
+                this.tilemap[`${x},${y}`],
+                [
+                    this.vertices[vertexIndex],
+                    this.vertices[vertexIndex+1],
+                    this.vertices[vertexIndex+this.width+1],
+                    this.vertices[vertexIndex+this.width+2]
+                ], [
+                    this.faces[faceIndex],
+                    this.faces[faceIndex+1]
+                ]
+            );
+
+        tile.faceIndex = faceIndex;
+
+        // console.log(x, y, faceIndex);
 
         this.tiles.push(tile);
 
@@ -111,27 +132,72 @@ class Tilemap {
 
     updateTilemap() {
 
+        let tiles = new Set();
+
+        // for (let i = 1; i < 10; i++)
         for (let i = 0; i < app.dirtyEntities.length; i++)
-            if (app.dirtyEntities[i] instanceof Destructible)
+            if (!(app.dirtyEntities[i] instanceof Destructible))
                 app.dirtyEntities[i].dirty = false;
             else {
 
                 let entity = app.dirtyEntities[i],
-                    map = entity.map,
-                    x = xWorldToTile(entity.x),
-                    y = xWorldToTile(entity.y);
+                    footprint = entity.tilemap,
+                    x = this.xWorldToTile(entity.x),
+                    y = this.yWorldToTile(entity.y);
 
                 app.dirtyEntities[i].dirty = false;
 
-                
+                // console.log(entity, x, y);
+
+                // console.log("xRange:", x + footprint.left, x + footprint.left + footprint.width);
+                // console.log("yRange:", y + footprint.top, y + footprint.top + footprint.height);
+
+                if (entity.tiles)
+                    for (let n = 0; n < entity.tiles.length; n++) {
+                        tiles.add(entity.tiles[n]);
+                        entity.tiles[n].remove(entity);
+                    }
+
+                entity.tiles = [];
+
+                for (let tX = footprint.left; tX < footprint.left + footprint.width; tX++)
+                    for (let tY = footprint.top; tY < footprint.top + footprint.height; tY++) {
+                        if (footprint.map[(tY - footprint.top) * footprint.width + tX - footprint.left] > 0) {
+                            let tile = this.grid[x + tX][y + tY];
+                            entity.tiles.push(tile);
+                            tiles.add(tile);
+                            tile.entities.set(entity, (tY - footprint.top) * footprint.width + tX - footprint.left);
+                        }
+
+                    }
 
             }
 
         app.dirtyEntities = [];
 
+        tiles = Array.from(tiles);
+        // for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < tiles.length; i++) {
+            tiles[i].updateMap();
+
+            let r = -0.5,
+                g = -0.5,
+                b = -0.5;
+
+            // console.log(tiles[i].pathing);
+
+            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
+                r = 0.5;
+
+            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
+                b = 0.5;
+
+            tiles[i].addRGB(r, g, b);
+        }
+
     }
 
-    pathable(x, y, map = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
+    pathable(x, y, map = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
 
         if (typeof map === number) map = this.pointToMap(x, y, map, type);
 
@@ -139,7 +205,7 @@ class Tilemap {
 
     }
 
-    pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
+    pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
 
         let xTile = this.xWorldToTile(x),
             yTile = this.yWorldToTile(y),
@@ -172,7 +238,23 @@ class Tilemap {
 
             }
 
-        return map;
+        let footprint = {
+            map: map,
+            top: minY,
+            left: minX,
+            width: maxX - minX + 1,
+            height: maxY - minY + 1
+        };
+
+        // for (let tX = footprint.left; tX < footprint.left + footprint.width; tX++)
+        //     for (let tY = footprint.top; tY < footprint.top + footprint.height; tY++) {
+        //         if (footprint.map[(tY - footprint.top) * footprint.width + tX - footprint.left] > 0) {
+        //             this.grid[xTile + tX][yTile + tY].offsetHSL(0.25);
+        //         }
+        //
+        //     }
+
+        return footprint;
 
     }
 

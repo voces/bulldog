@@ -21,17 +21,6 @@ class App extends EventEmitter2 {
 
         ws.on("message", message => this.messageSwitcher(message));
 
-        this.graphic.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
-        this.graphic.on("hoverOff", (oldIntersect, newIntersect) => {
-            oldIntersect.object.entity.emit("hoverOff", oldIntersect, newIntersect);
-            if (newIntersect)
-                newIntersect.object.entity.emit("hoverOn", newIntersect);
-        });
-        this.graphic.on("hoverFace", (oldIntersect, newIntersect) => oldIntersect.object.entity.emit("hoverFace", oldIntersect, newIntersect));
-        this.graphic.on("hover", intersect => intersect.object.entity.emit("hover", intersect));
-        this.graphic.on("mouseDown", (intersect, e) => intersect.object.entity.emit("mouseDown", intersect, e));
-        this.graphic.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
-
         Doodad.on("new", entity => this.newEntity(entity));
 
         this.graphic.updates.push(this);
