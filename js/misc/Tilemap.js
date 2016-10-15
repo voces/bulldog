@@ -141,23 +141,97 @@ class Tilemap {
 
     }
 
+    pathable(map, xTile, yTile) {
+
+        if (xTile < 0 || yTile < 0 || xTile >= this.width || yTile >= this.height)
+            return false;
+
+        let i = 0;
+
+        for (let x = xTile + map.left; x < xTile + map.width; x++)
+            for (let y = yTile + map.top; y < yTile + map.height; y++, i++)
+                if (this.grid[x][y].pathing & map.map[i])
+                    return false;
+
+        return true;
+
+    }
+
     nearestPathing(x, y, entity) {
 
-        let minimalTilemap;
+        let xTile = Math.floor((x + this.realWidth / 2) / 8),
+            yTile = this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1,
+
+            xMiss = x - this.xTileToWorld(xTile) + 4,
+            yMiss = 8 - (y - this.yTileToWorld(yTile) + 4),
+
+            minimalTilemap,
+
+            //0 down, 1 left, 2 up, 3 right
+            direction = xMiss < yMiss ? 8 - xMiss < yMiss ? 0 : 1 : 8 - xMiss < yMiss ? 3 : 2,
+            steps = 0,
+            initialSteps = 0;
+
+        this.updateTilemap();
 
         if (entity.structure)
             minimalTilemap = entity.tilemap;
 
-        else {
-
-            // console.log(entity.radius);
-
+        else
             minimalTilemap = this.pointToTilemap(entity.radius, entity.radius, entity.radius);
+
+        let tried = [];
+        if (this.grid[xTile] && this.grid[xTile][yTile])
+            tried.push(this.grid[xTile][yTile])
+
+        while (!this.pathable(minimalTilemap, xTile, yTile)) {
+
+            switch (direction) {
+                case 0: yTile++; break;
+                case 1: xTile--; break;
+                case 2: yTile--; break;
+                case 3: xTile++; break;
+            }
+
+            if (this.grid[xTile] && this.grid[xTile][yTile])
+                tried.push(this.grid[xTile][yTile])
+
+            if (steps === 0) {
+                steps = initialSteps;
+                if (direction === 0 || direction == 2) initialSteps++;
+                direction = (direction + 1) % 4;
+
+            } else steps--;
 
         }
 
+        let ticker = setInterval(() => {
 
-        // console.log(minimalTilemap)
+            let tile = tried.shift(),
+                fadeCount = 50;
+
+            tile.offsetHSL(0.5);
+
+            let innerTicker = setInterval(() => {
+
+                tile.offsetHSL(0.01);
+
+                if (!--fadeCount) clearInterval(innerTicker);
+
+            }, 40);
+
+            if (!tried.length) clearInterval(ticker);
+
+        }, 70);
+
+        // console.log(minimalTilemap, this.pathable(minimalTilemap, xTile, yTile));
+
+        // this.grid[xTile][yTile].offsetHSL(0.25);
+
+        return {
+            x: this.xTileToWorld(xTile),
+            y: this.yTileToWorld(yTile)
+        };
 
     }
 
@@ -228,7 +302,8 @@ class Tilemap {
 
     pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
 
-        radius -= Number.EPSILON;
+        radius -= (Number.EPSILON * radius * this.realWidth);
+        // console.log(x, y, radius);
 
         let xTile = this.xWorldToTile(x),
             yTile = this.yWorldToTile(y),
