@@ -15,8 +15,8 @@ class Tilemap {
         this.width = width;
         this.height = height;
 
-        this.realWidth = width*8;
-        this.realHeight = height*8;
+        this.realWidth = width*TERRAIN.TILE_SIZE;
+        this.realHeight = height*TERRAIN.TILE_SIZE;
 
         this.geometry = geometry;
 
@@ -77,19 +77,6 @@ class Tilemap {
                 } else console.log("bottom");
             }
 
-
-            // if ((posMask & 2) === 2)
-            //     tile.tiles.push(tile.right = this.createTile(x+1, y));
-            // if ((posMask & 4) === 4)
-            //     tile.tiles.push(tile.top = this.createTile(x, y-1));
-            // if ((posMask & 5) === 5)
-            //     tile.tiles.push(tile.topLeft = this.createTile(x-1, y-1));
-            // if ((posMask & 6) === 6)
-            //     tile.tiles.push(tile.topRight = this.createTile(x+1, y-1));
-            // if ((posMask & 8) === 8)
-            //     tile.tiles.push(tile.bottom = this.createTile(x, y+1));
-            // if ((posMask & 9) === 9) tile.tiles.push(tile.bottomLeft = this.createTile(x-1, y+1));
-            // if ((posMask & 10) === 10) tile.tiles.push(tile.bottomRight = this.createTile(x+1, y+1));
         }
 
         for (let i = 0; i < this.tiles.length; i++)
@@ -104,12 +91,12 @@ class Tilemap {
         if (x < 0 || y < 0 || x === this.width || y === this.height) return;
 
         let vertexIndex = y*(this.width+1) + x,
-            faceIndex = y*this.width*2 + x*2,
+            faceIndex = y*this.width*TERRAIN.TILE_PARTS + x*TERRAIN.TILE_PARTS,
             tile = new Tile(
                 this,
                 x, y,
                 this.tilemap[`${x},${y}`],
-                [
+                [   //TODO: TERRAIN.TILE_PARTS
                     this.vertices[vertexIndex],
                     this.vertices[vertexIndex+1],
                     this.vertices[vertexIndex+this.width+1],
@@ -134,8 +121,8 @@ class Tilemap {
 
     getTile(x, y) {
 
-        x = Math.floor((x + this.realWidth / 2) / 8);
-        y = this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1;
+        x = Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE);
+        y = this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1;
 
         return this.grid[x][y];
 
@@ -159,16 +146,16 @@ class Tilemap {
 
     nearestPathing(x, y, entity) {
 
-        let xTile = Math.floor((x + this.realWidth / 2) / 8),
-            yTile = this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1,
+        let xTile = Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE),
+            yTile = this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1,
 
-            xMiss = x - this.xTileToWorld(xTile) + 4,
-            yMiss = 8 - (y - this.yTileToWorld(yTile) + 4),
+            xMiss = x - this.xTileToWorld(xTile) + TERRAIN.TILE_SIZE/TERRAIN.TILE_PARTS,
+            yMiss = TERRAIN.TILE_SIZE - (y - this.yTileToWorld(yTile) + TERRAIN.TILE_SIZE/TERRAIN.TILE_PARTS),
 
             minimalTilemap,
 
             //0 down, 1 left, 2 up, 3 right
-            direction = xMiss < yMiss ? 8 - xMiss < yMiss ? 0 : 1 : 8 - xMiss < yMiss ? 3 : 2,
+            direction = xMiss < yMiss ? TERRAIN.TILE_SIZE - xMiss < yMiss ? 0 : 1 : TERRAIN.TILE_SIZE - xMiss < yMiss ? 3 : 2,
             steps = 0,
             initialSteps = 0;
 
@@ -235,11 +222,11 @@ class Tilemap {
 
     }
 
-    xWorldToTile(x) { return Math.floor((x + this.realWidth / 2) / 8); }
-    yWorldToTile(y) { return this.realHeight / 8 - Math.floor((y + this.realHeight / 2) / 8) - 1 }
+    xWorldToTile(x) { return Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE); }
+    yWorldToTile(y) { return this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1 }
 
-    xTileToWorld(x) { return (x + 0.5) * 8 - (this.realWidth / 2); }
-    yTileToWorld(y) { return (-y - 1 + this.realHeight / 8 + 0.5) * 8 - this.realHeight / 2; }
+    xTileToWorld(x) { return (x + 0.5) * TERRAIN.TILE_SIZE - (this.realWidth / TERRAIN.TILE_PARTS); }
+    yTileToWorld(y) { return (-y - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5) * TERRAIN.TILE_SIZE - this.realHeight / TERRAIN.TILE_PARTS; }
 
     updateTilemap() {
 
@@ -269,6 +256,7 @@ class Tilemap {
                 for (let tX = footprint.left; tX < footprint.left + footprint.width; tX++)
                     for (let tY = footprint.top; tY < footprint.top + footprint.height; tY++) {
                         if (footprint.map[(tY - footprint.top) * footprint.width + tX - footprint.left] > 0) {
+                            console.log(x, tX, y, tY);
                             let tile = this.grid[x + tX][y + tY];
                             entity.tiles.push(tile);
                             tiles.add(tile);
@@ -311,7 +299,7 @@ class Tilemap {
             map = [],
 
             xMiss = x - this.xTileToWorld(xTile) + 4,
-            yMiss = 8 - (y - this.yTileToWorld(yTile) + 4),
+            yMiss = TERRAIN.TILE_SIZE - (y - this.yTileToWorld(yTile) + 4),
 
             minX = Math.max(this.xWorldToTile(x - radius) - xTile, -xTile),
             maxX = Math.min(this.xWorldToTile(x + radius) - xTile, this.width - xTile - 1),
@@ -323,8 +311,8 @@ class Tilemap {
 
         for (let tY = minY; tY <= maxY; tY++)
             for (let tX = minX; tX <= maxX; tX++) {
-                let yDelta = tY < 0 ? (tY + 1) * 8 + yMiss : tY > 0 ? tY * -8 + yMiss : 0,
-                    xDelta = tX < 0 ? (tX + 1) * -8 - xMiss : tX > 0 ? tX * 8 - xMiss : 0;
+                let yDelta = tY < 0 ? (tY + 1) * TERRAIN.TILE_SIZE + yMiss : tY > 0 ? tY * -TERRAIN.TILE_SIZE + yMiss : 0,
+                    xDelta = tX < 0 ? (tX + 1) * -TERRAIN.TILE_SIZE - xMiss : tX > 0 ? tX * TERRAIN.TILE_SIZE - xMiss : 0;
 
                 // console.log("(", tX, tY, ")", Math.sqrt(xDelta**2 + yDelta**2) < radius);
                 // console.log("xDelta:", tX < 0 ? "a" : tX > 0 ? "b" : "c", tX < 0 ? (tX + 1) * -8 : tX > 0 ? tX * 8 : 0, xDelta);

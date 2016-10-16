@@ -14,15 +14,15 @@ class Terrain extends Doodad {
         props.colors = props.colors || [];
         props.tileMap = props.tileMap || [];
 
-        this.width = props.width*16;
-        this.height = props.height*16;
+        this.width = props.width*TERRAIN.TILE_SIZE*TERRAIN.TILE_PARTS;
+        this.height = props.height*TERRAIN.TILE_SIZE*TERRAIN.TILE_PARTS;
 
         this.minX = this.width / -2;
         this.maxX = this.width / 2;
         this.minY = this.height / -2;
         this.maxY = this.height / 2;
 
-        this.geometry = new THREE.PlaneGeometry(this.width, this.height, this.width/8, this.height/8);
+        this.geometry = new THREE.PlaneGeometry(this.width, this.height, this.width/TERRAIN.TILE_SIZE, this.height/TERRAIN.TILE_SIZE);
         // for (let i = 0; i < this.geometry.faces.length; i++)
         //     this.geometry.faces[i].color.setHex(0xF4A460);
 
@@ -33,10 +33,10 @@ class Terrain extends Doodad {
         for (let i = 0; i < props.heightMap.length && i < this.geometry.vertices.length; i++) {
             if (props.heightMap[i]) {
                 // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
-                this.geometry.vertices[i].z = props.heightMap[i];
+                this.geometry.vertices[i].z = props.heightMap[i]*2;
             }
-            // this.geometry.vertices[i].x += 2 * Math.random();
-            // this.geometry.vertices[i].y += 2 * Math.random();
+            this.geometry.vertices[i].x += TERRAIN.TILE_PARTS/2 * Math.random();
+            this.geometry.vertices[i].y += TERRAIN.TILE_PARTS/2 * Math.random();
         }
 
         //Rotate some squares (makes stuff look a bit less uniform)
@@ -55,7 +55,7 @@ class Terrain extends Doodad {
                 this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
             }
 
-        this.tilemap = new Tilemap(props.width*2, props.height*2, this.geometry, props.orientation, props.tileMap);
+        this.tilemap = new Tilemap(props.width*TERRAIN.TILE_PARTS, props.height*TERRAIN.TILE_PARTS, this.geometry, props.orientation, props.tileMap);
 
         this.geometry.computeFaceNormals();
         this.geometry.computeVertexNormals();
@@ -65,8 +65,8 @@ class Terrain extends Doodad {
                 this.geometry.faces[i*2].color.setHex(props.colors[i])
                 this.geometry.faces[i*2+1].color.setHex(props.colors[i])
             } else {
-                this.geometry.faces[i*2].color.setHex(0xF4A460)
-                this.geometry.faces[i*2+1].color.setHex(0xF4A460)
+                this.geometry.faces[i*2].color.setHex(0xF4A460);
+                this.geometry.faces[i*2+1].color.setHex(0xF4A460);
             }
         }
 
@@ -106,8 +106,8 @@ class Terrain extends Doodad {
     }
 
     getTile(x, y) {
-        x = Math.floor((x + this.width / 2) / 8);
-        y = this.height / 8 - Math.floor((y + this.height / 2) / 8) - 1;
+        x = Math.floor((x + this.width / 2) / TERRAIN.TILE_SIZE);
+        y = this.height / TERRAIN.TILE_SIZE - Math.floor((y + this.height / 2) / TERRAIN.TILE_SIZE) - 1;
 
         let tile = this.simpleTileMap[`${x},${y}`];
         return tile === undefined ? -1 : tile;
@@ -115,10 +115,10 @@ class Terrain extends Doodad {
 
     minHeight(x, y, radius = 0) {
 
-        let minX = Math.max(Math.floor((x - radius + this.width / 2) / 8), 0),
-            maxX = Math.min(Math.floor((x + radius + this.width / 2) / 8), this.width/8),
-            minY = Math.max(this.height / 8 - Math.floor((y + radius + this.height / 2) / 8) - 1, 0),
-            maxY = Math.min(this.height / 8 - Math.floor((y - radius + this.height / 2) / 8) - 1, this.height / 2),
+        let minX = Math.max(Math.floor((x - radius + this.width / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE), 0),
+            maxX = Math.min(Math.floor((x + radius + this.width / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE), this.width/TERRAIN.TILE_SIZE),
+            minY = Math.max(this.height / TERRAIN.TILE_SIZE - Math.floor((y + radius + this.height / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1, 0),
+            maxY = Math.min(this.height / TERRAIN.TILE_SIZE - Math.floor((y - radius + this.height / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1, this.height / TERRAIN.TILE_PARTS),
 
             minHeight = Infinity;
 

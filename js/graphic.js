@@ -24,11 +24,11 @@ class Graphic extends EventEmitter2 {
         this.defaultScene = this.scene;
 
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
-        // this.camera.position.z = 40;
-        // this.camera.position.y = -40;
+        this.camera.position.z = 300 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
+        this.camera.position.y = -200 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
         // this.camera.rotation.x = 0.93412;
-        this.camera.position.z = 300;
-        this.camera.position.y = -200;
+        // this.camera.position.z = 300;
+        // this.camera.position.y = -200;
         this.camera.rotation.x = 0.593412;
         this.defaultCamera = this.camera;
 
@@ -41,6 +41,7 @@ class Graphic extends EventEmitter2 {
         this.renderer.shadowMapHeight = shadowDetail;
 
         this.scene.fog = new THREE.Fog(0x111111);
+        this.scene.fog.far *= TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
 
         this.sun = new THREE.DirectionalLight(0xffffff, 1);
         this.sun.position.set(-50, -10, 100);

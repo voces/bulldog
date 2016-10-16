@@ -17,17 +17,11 @@ class Tile {
     }
 
     get minHeight() {
-        return Math.min(this.vertices[0].z,
-            this.vertices[1].z,
-            this.vertices[2].z,
-            this.vertices[3].z);
+        return Math.min(...this.vertices.map(vertex => vertex.z));
     }
 
     get maxHeight() {
-        return Math.max(this.vertices[0].z,
-            this.vertices[1].z,
-            this.vertices[2].z,
-            this.vertices[3].z);
+        return Math.max(...this.vertices.map(vertex => vertex.z));
     }
 
     setHSL(h, s, l) {

@@ -37,6 +37,9 @@ class Doodad extends EventEmitter2 {
                 shading: THREE.FlatShading
             });
 
+        if (!(this instanceof Terrain))
+            this.geometry.scale(TERRAIN.TILE_PARTS/2, TERRAIN.TILE_PARTS/2, TERRAIN.TILE_PARTS/2);
+
         if (this.geometry.animations) new Animated({entity: this});
         else this.mesh = new THREE.Mesh(this.geometry, this.material);
 
@@ -76,6 +79,8 @@ class Doodad extends EventEmitter2 {
     }
 
     registerMesh() {
+
+        this.mesh.geometry.scale(TERRAIN.TILE_PARTS/2, TERRAIN.TILE_PARTS/2, TERRAIN.TILE_PARTS/2);
 
         this.mesh.entity = this;
 

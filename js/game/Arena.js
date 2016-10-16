@@ -39,10 +39,12 @@ class Arena extends EventEmitter2 {
 
     calcTileHeightMap(tileHeightMap) {
 
-        let w = this.dimensions.width * 2 + 1,
-            h = this.dimensions.height * 2 + 1;
+        let w = this.dimensions.width * TERRAIN.TILE_PARTS + 1,
+            h = this.dimensions.height * TERRAIN.TILE_PARTS + 1;
 
-        this.heightMap = new Float32Array((w-1)*(h-1)*2);
+        const H = TERRAIN.TILE_PARTS * TERRAIN.TILE_HEIGHT;
+
+        this.heightMap = new Float32Array(w*h);
         this.orientation = new Uint8Array(w*h);
         this.colors = new Uint32Array((w-1)*(h-1));
 
@@ -51,39 +53,13 @@ class Arena extends EventEmitter2 {
 
             if (!tileHeightMap[i]) continue;
 
-            let x = i*2 % (w+1),
-                y = Math.floor(i*2/(w+1))*2;
+            let x = i*TERRAIN.TILE_PARTS % (w+TERRAIN.TILE_PARTS-1),
+                y = Math.floor(i*TERRAIN.TILE_PARTS/(w+TERRAIN.TILE_PARTS-1))*TERRAIN.TILE_PARTS;
 
-            this.heightMap[y*w-w + x] += tileHeightMap[i] * 4;
-            this.heightMap[y*w   + x] += tileHeightMap[i] * 8;
-            this.heightMap[y*w+w + x] += tileHeightMap[i] * 4;
-
-            if (x < w-1) {
-                this.heightMap[y*w-w + x+1] += tileHeightMap[i] * 2;
-                this.heightMap[y*w   + x+1] += tileHeightMap[i] * 4;
-                this.heightMap[y*w+w + x+1] += tileHeightMap[i] * 2;
-
-                this.orientation[y*(w-1)     + x] = 2;
-                this.orientation[(y+1)*(w-1) + x+1] = 2;
-
-                this.orientation[(y-2)*(w-1) + x+1] = 1;
-                this.orientation[(y-1)*(w-1) + x  ] = 1;
-            }
-
-            if (x > 0) {
-                this.heightMap[y*w-w + x-1] += tileHeightMap[i] * 2;
-                this.heightMap[y*w   + x-1] += tileHeightMap[i] * 4;
-                this.heightMap[y*w+w + x-1] += tileHeightMap[i] * 2;
-
-                this.orientation[(y-2)*(w-1) + x-2] = 2;
-                this.orientation[(y-1)*(w-1) + x-1] = 2;
-
-                this.orientation[ y   *(w-1) + x-1] = 1;
-                this.orientation[(y+1)*(w-1) + x-2] = 1;
-            }
-
-            // if (props.tileHeightMap[i] === 0)
-                // this.colors[y*(w-1)+x] = 0x0000FF;
+            for (let x2 = -TERRAIN.TILE_PARTS + 1; x2 <= TERRAIN.TILE_PARTS - 1; x2++)
+                for (let y2 = -TERRAIN.TILE_PARTS + 1; y2 <= TERRAIN.TILE_PARTS - 1; y2++)
+                    if (x + x2 >= 0 && x + x2 < w)
+                        this.heightMap[(y+y2)*w + x+x2] += tileHeightMap[i] * (1-Math.abs(x2)*TERRAIN.TILE_PARTS/Math.pow(TERRAIN.TILE_PARTS,2)- Math.abs(y2)*(TERRAIN.TILE_PARTS-Math.abs(x2))/Math.pow(TERRAIN.TILE_PARTS,2)) * TERRAIN.TILE_HEIGHT * TERRAIN.TILE_PARTS;
 
         }
 
@@ -97,7 +73,7 @@ class Arena extends EventEmitter2 {
                 } else this.tileMap[`${x},${y}`] = 0;
 
         for (let i = 0; i < this.heightMap.length; i++)
-            this.heightMap[i] += 1*Math.random();
+            this.heightMap[i] += TERRAIN.TILE_PARTS/4*Math.random();
 
     }
 
@@ -108,13 +84,13 @@ class Arena extends EventEmitter2 {
 
     adjustSubTiles(x, y, tileType, hue, s, l) {
 
-        let w = this.dimensions.width * 2 + 1,
-            h = this.dimensions.height * 2 + 1;
+        let w = this.dimensions.width * TERRAIN.TILE_PARTS + 1,
+            h = this.dimensions.height * TERRAIN.TILE_PARTS + 1;
 
-        this.adjustSubTile(x, y, tileType, y*(w-1)+x, hue, s, l);
-        this.adjustSubTile(x-1, y, tileType, y*(w-1)+x-1, hue, s, l);
-        this.adjustSubTile(x, y-1, tileType, (y-1)*(w-1)+x, hue, s, l);
-        this.adjustSubTile(x-1, y-1, tileType, (y-1)*(w-1)+x-1, hue, s, l);
+        for (let x2 = -TERRAIN.TILE_PARTS/2; x2 < TERRAIN.TILE_PARTS/2; x2++)
+            for (let y2 = -TERRAIN.TILE_PARTS/2; y2 < TERRAIN.TILE_PARTS/2; y2++)
+                if (x + x2 >= 0 && x + x2 < w-1 && y + y2 >= 0 && y2 + y2 < h)
+                    this.adjustSubTile(x+x2, y+y2, tileType, (y+y2)*(w-1) + (x+x2), hue, s, l);
 
     }
 
@@ -129,16 +105,16 @@ class Arena extends EventEmitter2 {
 
     calcTileMap(tileMap) {
 
-        let w = this.dimensions.width * 2 + 1,
-            h = this.dimensions.height * 2 + 1;
+        let w = this.dimensions.width * TERRAIN.TILE_PARTS + 1,
+            h = this.dimensions.height * TERRAIN.TILE_PARTS + 1;
 
         //Each i represents a face
         for (let i = 0; i < tileMap.length; i++) {
 
             if (!tileMap[i]) continue;
 
-            let x = i*2 % (w+1),
-                y = Math.floor(i*2/(w+1))*2;
+            let x = i*TERRAIN.TILE_PARTS % (w+TERRAIN.TILE_PARTS-1),
+                y = Math.floor(i*TERRAIN.TILE_PARTS/(w+TERRAIN.TILE_PARTS-1))*TERRAIN.TILE_PARTS;
 
             this.adjustTile(x, y, tileMap[i]);
 

@@ -18,7 +18,7 @@ class Structure extends Behavior {
             this.footprint.left = Math.ceil(this.footprint.width / -2);
 
         this.entity.radius = Math.max(this.footprint.width, this.footprint.height) * 4;
-
+        
         this.entity.structure = this;
 
         Object.defineProperty(this.entity, "x", {
