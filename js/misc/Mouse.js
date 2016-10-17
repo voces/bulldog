@@ -24,6 +24,8 @@ class Mouse extends EventEmitter2 {
 
         this.lastIntersects = intersects;
 
+        // if (intersects.length > 0) console.log(intersects[0].point);
+
         //No intersection; we're in gray space
         if (intersects.length === 0) {
 

@@ -32,11 +32,41 @@ class Walk extends Behavior {
 
     walk(point) {
 
-        let target = app.terrain.tilemap.nearestPathing(point.x, point.y, this.entity);
+        let xTile = app.terrain.tilemap.xWorldToTile(point.x),
+            yTile = app.terrain.tilemap.yWorldToTile(point.y),
 
-        // console.log(target);
+            source = {
+                x: this.entity.x,
+                y: this.entity.y
+            },
+            target;
 
-        // app.terrain.tilemap.pointToTilemap(point.x, point.y, this.entity.radius);
+        if (app.terrain.tilemap.pathable(this.entity.tilemap, xTile, yTile))
+            target = point;
+        else
+            target = app.terrain.tilemap.nearestPathing(point.x, point.y, this.entity);
+
+        let path = app.terrain.tilemap.path(this.entity, target);
+
+        let ticker = setInterval(() => {
+
+            let tile = path.shift(),
+                fadeCount = 50;
+
+            tile.offsetHSL(0.5);
+
+            let innerTicker = setInterval(() => {
+
+                tile.offsetHSL(0.01);
+
+                if (!--fadeCount) clearInterval(innerTicker);
+
+            }, 40);
+
+            if (!path.length) clearInterval(ticker);
+
+        }, 40);
+
     }
 
 }

@@ -91,7 +91,7 @@ class Tilemap {
         if (x < 0 || y < 0 || x === this.width || y === this.height) return;
 
         let vertexIndex = y*(this.width+1) + x,
-            faceIndex = y*this.width*TERRAIN.TILE_PARTS + x*TERRAIN.TILE_PARTS,
+            faceIndex = y*this.width*2 + x*2,
             tile = new Tile(
                 this,
                 x, y,
@@ -121,8 +121,8 @@ class Tilemap {
 
     getTile(x, y) {
 
-        x = Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE);
-        y = this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1;
+        x = Math.floor((x + this.realWidth / 2) / TERRAIN.TILE_SIZE);
+        y = this.height - Math.floor((y + this.realHeight / 2) / TERRAIN.TILE_SIZE) - 1;
 
         return this.grid[x][y];
 
@@ -130,15 +130,20 @@ class Tilemap {
 
     pathable(map, xTile, yTile) {
 
-        if (xTile < 0 || yTile < 0 || xTile >= this.width || yTile >= this.height)
+        if (xTile < 0 || yTile < 0 || xTile >= this.width || yTile >= this.height) {
+            // console.log("bounds");
             return false;
+        }
 
         let i = 0;
 
         for (let x = xTile + map.left; x < xTile + map.width; x++)
             for (let y = yTile + map.top; y < yTile + map.height; y++, i++)
-                if (this.grid[x][y].pathing & map.map[i])
+                if (this.grid[x][y].pathing & map.map[i]) {
+                    // console.log(x, y);
                     return false;
+                }
+
 
         return true;
 
@@ -146,17 +151,18 @@ class Tilemap {
 
     nearestPathing(x, y, entity) {
 
-        let xTile = Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE),
-            yTile = this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1,
+        let xTile = Math.floor((x + this.realWidth / 2) / TERRAIN.TILE_SIZE),
+            yTile = this.height - Math.floor((y + this.realHeight / 2) / TERRAIN.TILE_SIZE) - 1,
 
-            xMiss = x - this.xTileToWorld(xTile) + TERRAIN.TILE_SIZE/TERRAIN.TILE_PARTS,
-            yMiss = TERRAIN.TILE_SIZE - (y - this.yTileToWorld(yTile) + TERRAIN.TILE_SIZE/TERRAIN.TILE_PARTS),
+            xMiss = x - this.xTileToWorld(xTile) + TERRAIN.TILE_SIZE/2,
+            yMiss = TERRAIN.TILE_SIZE - (y - this.yTileToWorld(yTile) + TERRAIN.TILE_SIZE/2),
 
             minimalTilemap,
 
             //0 down, 1 left, 2 up, 3 right
             direction = xMiss < yMiss ? TERRAIN.TILE_SIZE - xMiss < yMiss ? 0 : 1 : TERRAIN.TILE_SIZE - xMiss < yMiss ? 3 : 2,
             steps = 0,
+            stride = entity.structure ? 2 : 1,
             initialSteps = 0;
 
         this.updateTilemap();
@@ -174,10 +180,10 @@ class Tilemap {
         while (!this.pathable(minimalTilemap, xTile, yTile)) {
 
             switch (direction) {
-                case 0: yTile++; break;
-                case 1: xTile--; break;
-                case 2: yTile--; break;
-                case 3: xTile++; break;
+                case 0: yTile += stride; break;
+                case 1: xTile -= stride; break;
+                case 2: yTile -= stride; break;
+                case 3: xTile += stride; break;
             }
 
             if (this.grid[xTile] && this.grid[xTile][yTile])
@@ -209,7 +215,7 @@ class Tilemap {
 
             if (!tried.length) clearInterval(ticker);
 
-        }, 70);
+        }, 10);
 
         // console.log(minimalTilemap, this.pathable(minimalTilemap, xTile, yTile));
 
@@ -222,11 +228,11 @@ class Tilemap {
 
     }
 
-    xWorldToTile(x) { return Math.floor((x + this.realWidth / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE); }
-    yWorldToTile(y) { return this.realHeight / TERRAIN.TILE_SIZE - Math.floor((y + this.realHeight / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1 }
+    xWorldToTile(x) { return Math.floor((x + this.realWidth / 2) / TERRAIN.TILE_SIZE); }
+    yWorldToTile(y) { return this.height - Math.floor((y + this.realHeight / 2) / TERRAIN.TILE_SIZE) - 1 }
 
-    xTileToWorld(x) { return (x + 0.5) * TERRAIN.TILE_SIZE - (this.realWidth / TERRAIN.TILE_PARTS); }
-    yTileToWorld(y) { return (-y - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5) * TERRAIN.TILE_SIZE - this.realHeight / TERRAIN.TILE_PARTS; }
+    xTileToWorld(x) { return (x + 0.5) * TERRAIN.TILE_SIZE - (this.realWidth / 2); }
+    yTileToWorld(y) { return (-y - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5) * TERRAIN.TILE_SIZE - this.realHeight / 2; }
 
     updateTilemap() {
 
@@ -234,7 +240,7 @@ class Tilemap {
 
         // for (let i = 1; i < 10; i++)
         for (let i = 0; i < app.dirtyEntities.length; i++)
-            if (!(app.dirtyEntities[i] instanceof Destructible))
+            if (!(app.dirtyEntities[i] instanceof Destructible) || (app.dirtyEntities[i] instanceof Unit && !app.dirtyEntities[i].structure && app.dirtyEntities[i].owner === app.localPlayer))
                 app.dirtyEntities[i].dirty = false;
             else {
 
@@ -255,8 +261,7 @@ class Tilemap {
 
                 for (let tX = footprint.left; tX < footprint.left + footprint.width; tX++)
                     for (let tY = footprint.top; tY < footprint.top + footprint.height; tY++) {
-                        if (footprint.map[(tY - footprint.top) * footprint.width + tX - footprint.left] > 0) {
-                            console.log(x, tX, y, tY);
+                        if (footprint.map[(tY - footprint.top) * footprint.width + tX - footprint.left] > 0 && x+tX > 0 && y+tY > 0 && x+tX < this.width && y+tY < this.height) {
                             let tile = this.grid[x + tX][y + tY];
                             entity.tiles.push(tile);
                             tiles.add(tile);
@@ -288,7 +293,7 @@ class Tilemap {
 
     }
 
-    pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.OBSTACLE) {
+    pointToTilemap(x, y, radius = 0, type = FOOTPRINT_TYPE.NOT_WALKABLE) {
 
         radius -= (Number.EPSILON * radius * this.realWidth);
         // console.log(x, y, radius);
@@ -341,6 +346,117 @@ class Tilemap {
         //     }
 
         return footprint;
+
+    }
+
+    //Adapted from https://github.com/bgrins/javascript-astar/blob/master/astar.js
+    path(entity, target) {
+
+        this.updateTilemap();
+
+        let start = this.grid[this.xWorldToTile(entity.x)][this.yWorldToTile(entity.y)],
+            end = this.grid[this.xWorldToTile(target.x)][this.yWorldToTile(target.y)],
+
+            tag = Math.random(),
+
+            h = (a, b) => Math.abs(b.x - a.x) + Math.abs(b.y - a.y),
+            openHeap = new BinaryHeap(node => node.__f),
+
+            best = start,
+
+            minimalTilemap;
+
+        // console.log(start, end);
+
+        openHeap.push(start);
+        start.__dirty = tag;
+        start.__h = h(start, end);
+        start.__f = 0;
+        start.__g = 0;
+        start.__visited = false;
+        start.__closed = false;
+        start.__parent = null;
+
+        if (entity.structure)
+            minimalTilemap = entity.tilemap;
+
+        else
+            minimalTilemap = this.pointToTilemap(entity.radius, entity.radius, entity.radius);
+
+        while (openHeap.length) {
+
+            let current = openHeap.pop();
+
+            // console.log("best:", best);
+            // console.log("current:", current);
+
+            if (current === end) break;
+
+            current.__closed = true;
+
+            let neighbors = current.nodes;
+
+            // console.log("a", neighbors.length);
+
+            for (let i = 0, length = neighbors.length; i < length; i++) {
+
+                let neighbor = neighbors[i];
+
+                if (neighbor.__dirty !== tag) {
+                    neighbor.__dirty = tag;
+                    neighbor.__h = 0;
+                    neighbor.__f = 0;
+                    neighbor.__g = 0;
+                    neighbor.__visited = false;
+                    neighbor.__closed = false;
+                    neighbor.__parent = null;
+                }
+
+                let wasVisited = neighbor.__visited;
+
+                if (neighbor.__closed || !neighbor.walkable) continue;
+                else if (!this.pathable(minimalTilemap, neighbor.x, neighbor.y)) {
+                    neighbor.__closed = true;
+                    continue;
+                }
+
+                // console.log("c");
+
+                let gScore = current.__g + 1;
+
+                if (!neighbor.__visited || gScore < neighbors.__g) {
+
+                    // console.log("d");
+
+                    neighbor.__visited = true;
+                    neighbor.__parent = current;
+                    neighbor.__h = neighbor.__h || h(neighbor, end);
+                    neighbor.__g = gScore;
+                    neighbor.__f = neighbor.__g + neighbor.__h;
+
+                    if (neighbor.__h < best.__h || (neighbor.__h === best.__h && neighbor.__g < best.__g))
+                        best = neighbor;
+
+                    if (!wasVisited)
+                        openHeap.push(neighbor);
+                    else
+                        openHeap.sinkDown(openHeap.indexOf(neighbor));
+
+                }
+
+            }
+
+        }
+
+        let path = [],
+            current = best;
+
+        while (current.__parent) {
+            path.unshift(current);
+            current = current.__parent;
+        }
+
+        return path;
 
     }
 

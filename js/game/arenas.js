@@ -7,7 +7,7 @@ let width = 28,
     nudgeW = (width % 2 ? 0 : TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS / 2),
     nudgeH = (height % 2 ? 0 : TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS / 2),
 
-    scale = TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS / 2;
+    scale = TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS / 2 * TERRAIN.TILE_STRUCTURE_PARTS / 2;
 
 new Arena({
     dimensions: {
@@ -51,7 +51,7 @@ new Arena({
         ], Granary: [
             {
                 x:  4 * scale + nudgeW,
-                y: 14 * scale + nudgeH
+                y: 13.5 * scale + nudgeH
             }
         ], BigFarm: [
             {
@@ -60,8 +60,8 @@ new Arena({
             }
         ], Inn: [
             {
-                x:  11 * scale + nudgeW,
-                y: -10 * scale + nudgeH
+                x:  10.5 * scale + nudgeW,
+                y: -10.5 * scale + nudgeH
             }
         ], Crates: [
             {

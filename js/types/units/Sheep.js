@@ -3,7 +3,7 @@ if (!window.loader) window.loader = new THREE.JSONLoader();
 
 class Sheep extends Unit {
     constructor(props) {
-        props.radius = 4;
+        props.radius = 8;
         // props.radius = 4 * 4;
         props.builds = props.builds || Sheep.builds;
         props.movementSpeed = props.movementSpeed || Sheep.movementSpeed;

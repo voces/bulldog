@@ -2,7 +2,7 @@
 class Inn extends Destructible {
     constructor(props = {}) {
 
-        let O = FOOTPRINT_TYPE.OBSTACLE,
+        const O = FOOTPRINT_TYPE.OBSTACLE,
             G = FOOTPRINT_TYPE.GROUND;
 
         props.structure = {

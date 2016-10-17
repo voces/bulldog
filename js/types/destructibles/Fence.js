@@ -2,7 +2,7 @@
 class Fence extends Destructible {
     constructor(props = {}) {
 
-        let orientation = props.orientation || (Math.random() < 0.5 ? "horizontal" : "vertical"),
+        const orientation = props.orientation || (Math.random() < 0.5 ? "horizontal" : "vertical"),
             length = props.length || Math.floor(Math.random() * 2) * 2 + 2;
 
         props.structure = {

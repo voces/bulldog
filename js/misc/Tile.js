@@ -6,7 +6,7 @@ class Tile {
         this.y = y;
         this.tileType = tileType;
         this.vertices = vertices;
-        this.faces = faces;
+        this.faces = faces.filter(face => typeof face !== "undefined");
         this.nodes = [];
         this.tiles = [];
 
@@ -70,7 +70,7 @@ class Tile {
 
         if (this.tileType === 0)
             this.pathing = FOOTPRINT_TYPE.OBSTACLE;
-        else if (this.tileType < 2)
+        else if (this.tileType <= 2)
             this.pathing = FOOTPRINT_TYPE.NOT_BUILDABLE;
         else
             this.pathing = FOOTPRINT_TYPE.GROUND;
