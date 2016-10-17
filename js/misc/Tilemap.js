@@ -456,8 +456,100 @@ class Tilemap {
             current = current.__parent;
         }
 
-        return path;
+        return this.smooth(entity, path);
 
     }
 
+    linearPathable(entity, start, end) {
+
+        let angle = Math.atan2(end.y - start.y, end.x - start.x),
+            dx = angle > Math.PI/-2 && angle < Math.PI/2 ? 1 : -1,
+            dy = angle > 0 ? 1 : -1,
+            x = this.xTileToWorld(start.x),
+            y = this.yTileToWorld(start.y),
+            endX = this.xTileToWorld(end.x),
+            endY = this.yTileToWorld(end.y);
+
+        if (dx === 1)
+
+            for (let xStep = x + TERRAIN.TILE_SIZE; xStep <= endX; xStep += TERRAIN.TILE_SIZE) {
+                // console.log(xStep, y - (xStep-x)*Math.tan(angle));
+                // boxPoint(xStep, y - (xStep-x)*Math.tan(angle), 0xFFFFFF);
+                // console.log(this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))));
+                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))))
+                    return false;
+
+            }
+
+        else
+
+            for (let xStep = x - TERRAIN.TILE_SIZE; xStep >= endX; xStep -= TERRAIN.TILE_SIZE) {
+                // console.log(xStep);
+                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))))
+                    return false;
+            }
+
+        return true;
+
+    }
+
+    smooth(entity, path) {
+
+        let outerFlag = true;
+
+        while (outerFlag) {
+            outerFlag = false;
+
+            let innerFlag = true;
+            while (innerFlag) {
+                innerFlag = false;
+
+                for (let i = 2; i < path.length; i++) {
+
+                    if ((path[i].x - path[i-2].x) * (path[i].y - path[i-2].y) !== 0 &&
+                            this.linearPathable(entity, path[i-2], path[i])) {
+
+                        console.log("diag", i-2, i);
+                        path.splice(i-1, 1);
+                        innerFlag = true;
+                        outerFlag = true;
+
+                    }
+
+                }
+
+            }
+
+            innerFlag = true;
+            while (innerFlag) {
+                innerFlag = false;
+
+                for (let i = 2; i < path.length; i++) {
+
+                    //Only smooth diagnols
+                    if ((path[i].x === path[i-1].x && path[i].x === path[i-2].x) ||
+                        (path[i].y === path[i-1].y && path[i].y === path[i-2].y)) {
+
+                        console.log("line", i-2, i);
+                        path.splice(i-1, 1);
+                        innerFlag = true;
+                        outerFlag = true;
+                    }
+
+                }
+            }
+
+        }
+
+        return path;
+    }
+
+}
+
+function boxPoint(x, y, color) {
+    let box = new THREE.Mesh(new THREE.BoxBufferGeometry(3,3,3), new THREE.MeshBasicMaterial({color: color}));
+    box.position.x = x;
+    box.position.y = y;
+    box.position.z = 8;
+    app.graphic.scene.add(box);
 }

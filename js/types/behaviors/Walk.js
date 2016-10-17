@@ -61,11 +61,11 @@ class Walk extends Behavior {
 
                 if (!--fadeCount) clearInterval(innerTicker);
 
-            }, 40);
+            }, 80);
 
             if (!path.length) clearInterval(ticker);
 
-        }, 40);
+        }, 100);
 
     }
 
