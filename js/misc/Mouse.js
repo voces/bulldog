@@ -1,7 +1,8 @@
 
 class Mouse extends EventEmitter2 {
     constructor() {
-        super({maxListeners: 20});
+        super();
+        this.setMaxListeners(0);
 
         this.filter = FILTER.UNITS;
         this.intersection = null;

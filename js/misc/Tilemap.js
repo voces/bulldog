@@ -128,6 +128,19 @@ class Tilemap {
 
     }
 
+    mapToTiles(map, xOffset, yOffset) {
+
+        let tiles = [];
+
+        for (let x = xOffset + map.left, i = 0; x < xOffset + map.width; x++)
+            for (let y = yOffset + map.top; y < yOffset + map.height; y++, i++)
+                if (map.map[i])
+                    tiles.push(this.grid[x][y])
+
+        return tiles;
+
+    }
+
     pathable(map, xTile, yTile) {
 
         if (xTile < 0 || yTile < 0 || xTile >= this.width || yTile >= this.height) {
@@ -137,8 +150,8 @@ class Tilemap {
 
         let i = 0;
 
-        for (let x = xTile + map.left; x < xTile + map.width; x++)
-            for (let y = yTile + map.top; y < yTile + map.height; y++, i++)
+        for (let x = xTile + map.left; x < xTile + map.width + map.left; x++)
+            for (let y = yTile + map.top; y < yTile + map.height + map.top; y++, i++)
                 if (this.grid[x][y].pathing & map.map[i]) {
                     // console.log(x, y);
                     return false;
@@ -173,6 +186,8 @@ class Tilemap {
         else
             minimalTilemap = this.pointToTilemap(entity.radius, entity.radius, entity.radius);
 
+        // console.log(minimalTilemap);
+
         let tried = [];
         if (this.grid[xTile] && this.grid[xTile][yTile])
             tried.push(this.grid[xTile][yTile])
@@ -198,32 +213,42 @@ class Tilemap {
 
         }
 
-        let ticker = setInterval(() => {
-
-            let tile = tried.shift(),
-                fadeCount = 50;
-
-            tile.offsetHSL(0.5);
-
-            let innerTicker = setInterval(() => {
-
-                tile.offsetHSL(0.01);
-
-                if (!--fadeCount) clearInterval(innerTicker);
-
-            }, 40);
-
-            if (!tried.length) clearInterval(ticker);
-
-        }, 10);
+        // let ticker = setInterval(() => {
+        //
+        //     let tile = tried.shift(),
+        //         fadeCount = 50;
+        //
+        //     tile.offsetHSL(0.5);
+        //
+        //     let innerTicker = setInterval(() => {
+        //
+        //         tile.offsetHSL(0.01);
+        //
+        //         if (!--fadeCount) clearInterval(innerTicker);
+        //
+        //     }, 40);
+        //
+        //     if (!tried.length) clearInterval(ticker);
+        //
+        // }, 10);
 
         // console.log(minimalTilemap, this.pathable(minimalTilemap, xTile, yTile));
 
         // this.grid[xTile][yTile].offsetHSL(0.25);
 
+        if (minimalTilemap.width % 2 === 0)
+            x = xTile * TERRAIN.TILE_SIZE - (this.realWidth / 2);
+        else
+            x = (xTile + 0.5) * TERRAIN.TILE_SIZE - (this.realWidth / 2);
+
+        if (minimalTilemap.height % 2 === 0)
+            y = (-yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+        else
+            y = (-yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+
         return {
-            x: this.xTileToWorld(xTile),
-            y: this.yTileToWorld(yTile)
+            x: x,
+            y: y
         };
 
     }
@@ -274,22 +299,22 @@ class Tilemap {
 
         app.dirtyEntities = [];
 
-        tiles = Array.from(tiles);
-        for (let i = 0; i < tiles.length; i++) {
-            tiles[i].updateMap();
-
-            let r = -0.5,
-                g = -0.5,
-                b = -0.5;
-
-            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
-                r = 0.5;
-
-            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
-                b = 0.5;
-
-            tiles[i].addRGB(r, g, b);
-        }
+        // tiles = Array.from(tiles);
+        // for (let i = 0; i < tiles.length; i++) {
+        //     tiles[i].updateMap();
+        //
+        //     let r = -0.5,
+        //         g = -0.5,
+        //         b = -0.5;
+        //
+        //     if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
+        //         r = 0.5;
+        //
+        //     if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
+        //         b = 0.5;
+        //
+        //     tiles[i].addRGB(r, g, b);
+        // }
 
     }
 
@@ -359,7 +384,7 @@ class Tilemap {
 
             tag = Math.random(),
 
-            h = (a, b) => Math.abs(b.x - a.x) + Math.abs(b.y - a.y),
+            h = (a, b) => Math.sqrt(Math.abs(b.x - a.x)**2 + Math.abs(b.y - a.y)**2),
             openHeap = new BinaryHeap(node => node.__f),
 
             best = start,
@@ -456,7 +481,13 @@ class Tilemap {
             current = current.__parent;
         }
 
-        return this.smooth(entity, path);
+        path.unshift(this.getTile(entity.x, entity.y));
+        // path.push(this.getTile(target.x, target.y));
+
+        return this.smooth(entity, path).map(tile => ({
+            x: this.xTileToWorld(tile.x - 0.5),
+            y: this.yTileToWorld(tile.y + 0.5)}));
+        // return this.smooth(entity, path);
 
     }
 
@@ -465,28 +496,64 @@ class Tilemap {
         let angle = Math.atan2(end.y - start.y, end.x - start.x),
             dx = angle > Math.PI/-2 && angle < Math.PI/2 ? 1 : -1,
             dy = angle > 0 ? 1 : -1,
-            x = this.xTileToWorld(start.x),
-            y = this.yTileToWorld(start.y),
-            endX = this.xTileToWorld(end.x),
-            endY = this.yTileToWorld(end.y);
+            x = this.xTileToWorld(start.x - 0.5),
+            y = this.yTileToWorld(start.y + 0.5),
+            endX = this.xTileToWorld(end.x - 0.5),
+            endY = this.yTileToWorld(end.y + 0.5);
+
+        // box(x, y, 0x0000FF);
+        // box(endX, endY, 0xFF0000);
+
+        // console.log({x: start.x, y: start.y}, {x: end.x, y: end.y});
+        // console.log(angle, dx, dy, x, y, this.xWorldToTile(x), this.yWorldToTile(y));
 
         if (dx === 1)
 
-            for (let xStep = x + TERRAIN.TILE_SIZE; xStep <= endX; xStep += TERRAIN.TILE_SIZE) {
-                // console.log(xStep, y - (xStep-x)*Math.tan(angle));
-                // boxPoint(xStep, y - (xStep-x)*Math.tan(angle), 0xFFFFFF);
-                // console.log(this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))));
-                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))))
+            for (let xStep = x + TERRAIN.TILE_SIZE/2; xStep < endX; xStep += TERRAIN.TILE_SIZE/2) {
+                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle)))) {
+                    // box(xStep, y - (xStep-x)*Math.tan(angle));
                     return false;
+                }
+
+                // box(xStep, y - (xStep-x)*Math.tan(angle), 0xFFFFFF);
 
             }
 
         else
 
-            for (let xStep = x - TERRAIN.TILE_SIZE; xStep >= endX; xStep -= TERRAIN.TILE_SIZE) {
-                // console.log(xStep);
-                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle))))
+            for (let xStep = x - TERRAIN.TILE_SIZE/2; xStep > endX; xStep -= TERRAIN.TILE_SIZE/2) {
+                if (!this.pathable(this.pointToTilemap(xStep, y - (xStep-x)*Math.tan(angle), entity.radius), this.xWorldToTile(xStep), this.yWorldToTile(y - (xStep-x)*Math.tan(angle)))) {
+                    // box(xStep, y - (xStep-x)*Math.tan(angle));
                     return false;
+                }
+
+                // box(xStep, y - (xStep-x)*Math.tan(angle), 0xFFFFFF);
+            }
+
+        if (dy === 1)
+
+            for (let yStep = y - TERRAIN.TILE_SIZE/2; yStep > endY; yStep -= TERRAIN.TILE_SIZE/2) {
+
+                if (!this.pathable(this.pointToTilemap(x - (yStep-y)/Math.tan(angle), yStep, entity.radius), this.xWorldToTile(x - (yStep-y)/Math.tan(angle)), this.yWorldToTile(yStep))) {
+                    // box(x - (yStep-y)/Math.tan(angle), yStep);
+                    return false;
+                }
+
+                // box(x - (yStep-y)/Math.tan(angle), yStep, 0xFFFFFF);
+
+            }
+
+        else
+
+            for (let yStep = y + TERRAIN.TILE_SIZE/2; yStep < endY; yStep += TERRAIN.TILE_SIZE/2) {
+
+                if (!this.pathable(this.pointToTilemap(x - (yStep-y)/Math.tan(angle), yStep, entity.radius), this.xWorldToTile(x - (yStep-y)/Math.tan(angle)), this.yWorldToTile(yStep))) {
+                    // box(x - (yStep-y)/Math.tan(angle), yStep);
+                    return false;
+                }
+
+                // box(x - (yStep-y)/Math.tan(angle), yStep, 0xFFFFFF);
+
             }
 
         return true;
@@ -500,21 +567,28 @@ class Tilemap {
         while (outerFlag) {
             outerFlag = false;
 
+            // console.log("outer");
+
             let innerFlag = true;
             while (innerFlag) {
                 innerFlag = false;
+
+                // console.log("inner1");
 
                 for (let i = 2; i < path.length; i++) {
 
                     if ((path[i].x - path[i-2].x) * (path[i].y - path[i-2].y) !== 0 &&
                             this.linearPathable(entity, path[i-2], path[i])) {
 
-                        console.log("diag", i-2, i);
+                        // console.log("diag", i-2, i, path[i-1]);
                         path.splice(i-1, 1);
+
+                        // if (!outerFlag) console.log("inner1 hit");
                         innerFlag = true;
                         outerFlag = true;
 
                     }
+                    //  else console.log("not diag", i-2, i);
 
                 }
 
@@ -524,22 +598,35 @@ class Tilemap {
             while (innerFlag) {
                 innerFlag = false;
 
+                // console.log("inner2");
+
                 for (let i = 2; i < path.length; i++) {
 
                     //Only smooth diagnols
                     if ((path[i].x === path[i-1].x && path[i].x === path[i-2].x) ||
                         (path[i].y === path[i-1].y && path[i].y === path[i-2].y)) {
 
-                        console.log("line", i-2, i);
+                        // console.log("line", i-2, i);
                         path.splice(i-1, 1);
+
+                        // if (!outerFlag) console.log("inner2 hit");
                         innerFlag = true;
                         outerFlag = true;
+
+                        if (i < path.length && (path[i].x - path[i-2].x) * (path[i].y - path[i-2].y) !== 0 &&
+                                this.linearPathable(entity, path[i-2], path[i])) {
+
+                            // console.log("diag", i-2, i, path[i-1]);
+                            path.splice(i-1, 1);
+                        }
                     }
 
                 }
             }
 
         }
+
+        // console.log(path);
 
         return path;
     }

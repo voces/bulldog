@@ -64,6 +64,12 @@ class Tile {
 
     }
 
+    getHSL() {
+
+        return this.faces[0].color.getHSL();
+
+    }
+
     updateMap() {
 
         let wasWalkable = this.walkable;
