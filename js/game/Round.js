@@ -12,7 +12,6 @@ function equalChance(...outcomes) {
     return outcomes[Math.floor(Math.random() * outcomes.length)];
 }
 
-
 class Round extends EventEmitter2 {
     constructor(game) {
         super();

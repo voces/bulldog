@@ -128,8 +128,11 @@ class Graphic extends EventEmitter2 {
 
         this.renderer.render(this.scene, this.camera);
 
+        syncProperty.time = Date.now();
+        syncProperty.prediction = true;
         for (let i = 0; i < this.updates.length; i++)
             this.updates[i].update(deltaMsec, nowMsec / 1000);
+        syncProperty.prediction = false;
 
     }
 

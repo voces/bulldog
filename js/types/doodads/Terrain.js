@@ -115,10 +115,10 @@ class Terrain extends Doodad {
 
     minHeight(x, y, radius = 0) {
 
-        let minX = Math.max(Math.floor((x - radius + this.width / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE), 0),
-            maxX = Math.min(Math.floor((x + radius + this.width / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE), this.width/TERRAIN.TILE_SIZE),
-            minY = Math.max(this.height / TERRAIN.TILE_SIZE - Math.floor((y + radius + this.height / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1, 0),
-            maxY = Math.min(this.height / TERRAIN.TILE_SIZE - Math.floor((y - radius + this.height / TERRAIN.TILE_PARTS) / TERRAIN.TILE_SIZE) - 1, this.height / TERRAIN.TILE_PARTS),
+        let minX = this.tilemap.xWorldToTile(x - radius),
+            maxX = this.tilemap.xWorldToTile(x + radius),
+            minY = this.tilemap.yWorldToTile(y + radius),
+            maxY = this.tilemap.yWorldToTile(y - radius),
 
             minHeight = Infinity;
 

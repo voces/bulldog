@@ -299,22 +299,22 @@ class Tilemap {
 
         app.dirtyEntities = [];
 
-        // tiles = Array.from(tiles);
-        // for (let i = 0; i < tiles.length; i++) {
-        //     tiles[i].updateMap();
-        //
-        //     let r = -0.5,
-        //         g = -0.5,
-        //         b = -0.5;
-        //
-        //     if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
-        //         r = 0.5;
-        //
-        //     if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
-        //         b = 0.5;
-        //
-        //     tiles[i].addRGB(r, g, b);
-        // }
+        tiles = Array.from(tiles);
+        for (let i = 0; i < tiles.length; i++) {
+            tiles[i].updateMap();
+
+            let r = -0.5,
+                g = -0.5,
+                b = -0.5;
+
+            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
+                r = 0.5;
+
+            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
+                b = 0.5;
+
+            tiles[i].addRGB(r, g, b);
+        }
 
     }
 
@@ -384,7 +384,7 @@ class Tilemap {
 
             tag = Math.random(),
 
-            h = (a, b) => Math.sqrt(Math.abs(b.x - a.x)**2 + Math.abs(b.y - a.y)**2),
+            h = (a, b) => Math.abs(b.x - a.x)**2 + Math.abs(b.y - a.y)**2,
             openHeap = new BinaryHeap(node => node.__f),
 
             best = start,
@@ -481,7 +481,7 @@ class Tilemap {
             current = current.__parent;
         }
 
-        path.unshift(this.getTile(entity.x, entity.y));
+        // path.unshift(this.getTile(entity.x, entity.y));
         // path.push(this.getTile(target.x, target.y));
 
         return this.smooth(entity, path).map(tile => ({

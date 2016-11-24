@@ -19,7 +19,8 @@ class App extends EventEmitter2 {
         this.ui.showResourceDisplay();
         this.ui.showCommandDeck();
 
-        ws.on("message", message => this.messageSwitcher(message));
+        this.ws = new WS();
+        this.ws.on("message", message => this.messageSwitcher(message));
 
         Doodad.on("new", entity => this.newEntity(entity));
 
@@ -46,6 +47,8 @@ class App extends EventEmitter2 {
         this.localPlayer = new Player({id: message.clientId, isLocalPlayer: true});
         this.players.push(this.localPlayer);
         this.localPlayer.on("currency", value => this.ui.currency = value);
+
+        this.ws.localPlayer = this.localPlayer;
 
         this.emit("connected", message);
 
@@ -103,10 +106,10 @@ class App extends EventEmitter2 {
     }
 
     update(delta) {
-
-        for (let entity in this.activeEntities)
+        // console.log("app.update");
+        for (let entity of this.activeEntities)
             entity.update(delta);
-
+        
     }
 
 }

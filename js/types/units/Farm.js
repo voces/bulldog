@@ -17,6 +17,8 @@ class Farm extends Unit {
 
             this.geometry = geo;
 
+            this.geometry.scale(1.2, 1.2, 1.2);
+
             for (let i = 0; i < geo.faces.length; i++)
                 this.geometry.faces[i].color.setHex(this.faceColor(i));
 

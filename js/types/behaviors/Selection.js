@@ -13,7 +13,7 @@ class Selection extends Behavior {
 
     get selectionCircle() {
         if (this._selectionCircle) return this._selectionCircle;
-
+        console.log(this.entity.constructor.name, this.entity.radius);
         this._selectionCircle = new SelectionCircle({
             rgb: 0xFFFFFF,
             x: this.entity.x,

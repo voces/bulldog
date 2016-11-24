@@ -41,38 +41,76 @@ class Structure extends Behavior {
         if (typeof this.footprint.left === "undefined")
             this.footprint.left = Math.ceil(this.footprint.width / -2);
 
-        this.entity.radius = Math.max(this.footprint.width, this.footprint.height) * 2;
+        this.entity.radius = Math.max(this.footprint.width, this.footprint.height) * TERRAIN.TILE_SIZE/2;
 
         this.entity.structure = this;
 
-        Object.defineProperty(this.entity, "x", {
-            set: value => this.setX(value),
-            get: () => this.entity._x
-        })
+        // console.log("x overwrite", this);
+        syncProperty(this.entity, "x", {
+            initialValue: this.entity.x || 0,
+            preprocessor: (value) => this.xPreprocessor(value)
+        });
 
-        Object.defineProperty(this.entity, "y", {
-            set: value => this.setY(value),
-            get: () => this.entity._y
-        })
+        syncProperty(this.entity, "y", {
+            initialValue: this.entity.y || 0,
+            preprocessor: (value) => this.yPreprocessor(value)
+        });
+
+        // syncProperty(this, "y", {
+        //     initialValue: props.y || 0,
+        //     preprocessor: (value) => {
+        //         if (this.mesh) this.mesh.position.y = value;
+        //         return value;
+        //     }
+        // });
+
+        // Object.defineProperty(this.entity, "x", {
+        //     set: value => this.setX(value),
+        //     get: () => this.entity._x
+        // })
+        //
+        // Object.defineProperty(this.entity, "y", {
+        //     set: value => this.setY(value),
+        //     get: () => this.entity._y
+        // })
 
     }
 
-    setX(value) {
-        if (this.footprint.width % (2*TERRAIN.TILE_STRUCTURE_PARTS) === 0) value = Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) * TERRAIN.TILE_STRUCTURE_SIZE;
-        else value = (Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) - 0.5) * TERRAIN.TILE_STRUCTURE_SIZE;
+    xPreprocessor(value) {
 
-        this.entity._x = value;
-        if (this.entity.mesh) this.entity.mesh.position.x = this.entity._x;
-        this.dirty = true;
+        let oldValue = value;
+
+        if (this.footprint.width % (2*TERRAIN.TILE_STRUCTURE_PARTS) === 0)
+            value = Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) * TERRAIN.TILE_STRUCTURE_SIZE;
+        else
+            value = (Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) - 0.5) * TERRAIN.TILE_STRUCTURE_SIZE;
+
+        if (this.entity.mesh) this.entity.mesh.position.x = value;
+        this.entity.dirty = true;
+
+        if (oldValue !== value)
+            console.warn("altering x on", this.entity.constructor.name, "(", this.entity.id, ")", "to", value, "from", oldValue);
+
+        return value;
     }
 
-    setY(value) {
-        if (this.footprint.height % (2*TERRAIN.TILE_STRUCTURE_PARTS) === 0) value = Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) * TERRAIN.TILE_STRUCTURE_SIZE;
-        else value = (Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) - 0.5) * TERRAIN.TILE_STRUCTURE_SIZE;
+    yPreprocessor(value) {
 
-        this.entity._y = value;
+        let oldValue = value;
+
+        if (this.footprint.height % (2*TERRAIN.TILE_STRUCTURE_PARTS) === 0)
+            value = Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) * TERRAIN.TILE_STRUCTURE_SIZE;
+        else
+            value = (Math.round(value / TERRAIN.TILE_STRUCTURE_SIZE) - 0.5) * TERRAIN.TILE_STRUCTURE_SIZE;
+
         if (this.entity.mesh) this.entity.mesh.position.y = value;
-        this.dirty = true;
+        this.entity.dirty = true;
+
+        if (oldValue !== value)
+            console.warn("altering y on", this.entity.constructor.name, "(", this.entity.id, ")", "to", value, "from", oldValue);
+
+        return value;
+
     }
 
 }

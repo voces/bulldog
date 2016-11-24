@@ -7,8 +7,34 @@ class Doodad extends EventEmitter2 {
 
         this.id = Doodad.id++;
 
-        this.x = props.x || 0;
-        this.y = props.y || 0;
+        syncProperty(this, "x", {
+            initialValue: props.x || 0,
+            preprocessor: (value) => {
+                if (this.mesh) {
+                    if (typeof value == "function")
+                        this.mesh.position.x = value(syncProperty.time);
+                    else this.mesh.position.x = value;
+                }
+
+                return value;
+            }
+        });
+
+        syncProperty(this, "y", {
+            initialValue: props.y || 0,
+            preprocessor: (value) => {
+                if (this.mesh) {
+                    if (typeof value == "function")
+                        this.mesh.position.y = value(syncProperty.time);
+                    else this.mesh.position.y = value;
+                }
+
+                return value;
+            }
+        });
+
+        // this.x = props.x || 0;
+        // this.y = props.y || 0;
         this.height = props.height || 0;
 
         this.scale = props.scale || 1;
@@ -91,22 +117,6 @@ class Doodad extends EventEmitter2 {
 
     }
 
-    set x(value) {
-        this._x = value;
-        if (this.mesh) this.mesh.position.x = value;
-        this.dirty = true;
-    }
-
-    get x() { return this._x; }
-
-    set y(value) {
-        this._y = value;
-        if (this.mesh) this.mesh.position.y = value;
-        this.dirty = true;
-    }
-
-    get y() { return this._y; }
-
     get z() { return this.mesh.position.z; }
 
     fetchModel(path, callback) {
@@ -124,7 +134,7 @@ class Doodad extends EventEmitter2 {
     }
 
     update(delta) {
-
+        // console.log("Doodad.update");
         for (let i = 0; i < this.activeBehaviors.length; i++)
             this.activeBehaviors[i].update(delta);
 

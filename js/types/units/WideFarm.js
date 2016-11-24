@@ -19,7 +19,7 @@ class WideFarm extends Unit {
 
             this.geometry = geo;
 
-            this.geometry.scale(1.5, 1.5, 1.5);
+            this.geometry.scale(1.9, 1.9, 1.9);
 
             for (let i = 0; i < geo.faces.length; i++)
                 this.geometry.faces[i].color.setHex(this.faceColor(i));

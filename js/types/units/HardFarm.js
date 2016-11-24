@@ -22,7 +22,7 @@ class HardFarm extends Unit {
 
             this.geometry = geo;
 
-            this.geometry.scale(2, 2, 2);
+            this.geometry.scale(2.5, 2.5, 2.5);
 
             for (let i = 0; i < geo.faces.length; i++)
                 this.geometry.faces[i].color.setHex(this.faceColor(i));
