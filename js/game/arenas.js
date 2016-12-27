@@ -9,9 +9,6 @@ let width = 28,
 
     s = TERRAIN.TILE_SIZE;
 
-console.log(s, nudgeW, nudgeH);
-console.log(TERRAIN.TILE_SIZE, TERRAIN.TILE_PARTS, TERRAIN.TILE_STRUCTURE_PARTS);
-
 new Arena({
     dimensions: {
         height: height,

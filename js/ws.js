@@ -36,11 +36,12 @@ class WS extends EventEmitter2 {
 
         this.connect();
 
-        this.tackingId = 0;
-
-        this.callbacks = [];
+        this.echoId = 0;
+        this.echos = [];
 
         this.watchPing();
+
+        this.lastChannel = undefined;
 
     }
 
@@ -51,14 +52,13 @@ class WS extends EventEmitter2 {
         this.rollingPing = new RollingAverage(5);
         this.rollingOffset = new RollingAverage(100);
 
-        setInterval(() => this.send({
-            eid: "echo",
-            type: "ping",
+        setInterval(() => this.echo({
             sent: Date.now()
 
-        }, message => {
+        }).then(message => {
+            // console.log(message);
             this.rollingPing.push(Date.now() - message.sent);
-            this.rollingOffset.push(Date.now() - message.timestamp);
+            this.rollingOffset.push(Date.now() - message.time);
 
         }), 1000);
 
@@ -74,45 +74,65 @@ class WS extends EventEmitter2 {
 
         this.socket = new WebSocket(`wss://${this.host}:${this.port}`);
 
-        this.socket.addEventListener("message", message => this.onMessage(message));
+        this.socket.addEventListener("message", e => this.onMessage(JSON.parse(e.data)));
         this.socket.addEventListener("open", () => this.onOpen());
         this.socket.addEventListener("close", () => this.onClose());
 
     }
 
     onMessage(message) {
-        message = JSON.parse(message.data);
         // console.log("RECV", message);
+
+
 
         if (typeof this.offset === "undefined") {
 
-            if (message.timestamp && (message.eid !== "echo" || message.type !== "ping") && this.rollingOffset.arr.length) {
+            if (message.time && (message.id !== "echo") && this.rollingOffset.arr.length) {
                 this.updateOffset();
-                message.localTimestamp = message.timestamp + this.offset
+                message.localTime = message.time + this.offset
 
-            } else message.localTimestamp = Date.now() + Date.now() - message.timestamp;
+            } else message.localTime = Date.now() + Date.now() - message.time;
 
-        } else message.localTimestamp = message.timestamp + this.offset;
+        } else message.localTime = message.time + this.offset;
 
-        syncProperty.time = message.localTimestamp;
+        syncProperty.time = message.localTime;
 
-        if (typeof message.tid !== "undefined" && this.localPlayer && message.origin === this.localPlayer.id && this.callbacks[message.tid]) {
-            this.callbacks[message.tid](message);
-            delete this.callbacks[message.tid];
+        if (typeof message.echo !== "undefined" && this.echos[message.echo]) {
+
+            if (message.id === "fail") this.echos[message.echo].reject(message);
+            else this.echos[message.echo].resolve(message);
+
+            setTimeout(() => delete this.echos[message.echo], 0);
         }
 
+        this.emit(message.id || "push", message);
         this.emit("message", message);
     }
 
-    send(message, callback) {
+    echo(packet) {
+        packet.id = "echo";
+        return this.json(packet)
+    }
+
+    channels() { return this.json({id: "channels"}) }
+    subscribe(channel) { return this.json({id: "subscribe", channelName: channel}); }
+    unsubscribe(channel) { return this.json({id: "unsubscribe", channelName: channel}); }
+    rename(name) { return this.json({id: "rename", name: name}); }
+
+    json(message, callback) {
         // console.log("SEND", message);
+        // console.log(message.channelName, this.channelName);
+        if (typeof message.channelName === "undefined") message.channelName = this.lastChannel;
+        else this.lastChannel = message.channelName
+        // console.log(message.channelName, this.channelName);
+        return new Promise((resolve, reject) => {
+            message.echo = this.echoId++;
+            this.echos[message.echo] = {resolve, reject};
 
-        if (callback) {
-            message.tid = this.tackingId++;
-            this.callbacks[message.tid] = callback;
-        }
+            // console.log("SEND", message);
+            this.socket.send(JSON.stringify(message));
+        });
 
-        this.socket.send(JSON.stringify(message));
     }
 
     onOpen() {

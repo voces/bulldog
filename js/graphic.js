@@ -50,12 +50,12 @@ class Graphic extends EventEmitter2 {
         // this.light.position.set(-50, 0, 100);
 
         this.sun.castShadow = true;
-        this.sun.shadow.camera.near = -64;
-        this.sun.shadow.camera.far = 224;
-        this.sun.shadow.camera.left = -224;
-        this.sun.shadow.camera.right = 224;
-        this.sun.shadow.camera.top = 144;
-        this.sun.shadow.camera.bottom = -144;
+        this.sun.shadow.camera.near = -TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 5;
+        this.sun.shadow.camera.far = TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 10;
+        this.sun.shadow.camera.left = -TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 18;
+        this.sun.shadow.camera.right = TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 18;
+        this.sun.shadow.camera.top = TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 9;
+        this.sun.shadow.camera.bottom = -TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE * 9;
         // this.light.shadow.bias = -0.001;
 
         this.scene.add(this.sun);
@@ -63,7 +63,7 @@ class Graphic extends EventEmitter2 {
         this.ambientLight = new THREE.AmbientLight(0x404040);
         this.scene.add(this.ambientLight);
 
-        // this.scene.add(new THREE.CameraHelper(this.light.shadow.camera));
+        // this.scene.add(new THREE.CameraHelper(this.sun.shadow.camera));
 
         // this.controls = new THREE.OrbitControls(camera);
 

@@ -20,7 +20,8 @@ class App extends EventEmitter2 {
         this.ui.showCommandDeck();
 
         this.ws = new WS();
-        this.ws.on("message", message => this.messageSwitcher(message));
+        this.ws.on("open", () => this.ws.subscribe("bulldog").then(m => this.connected(m)));
+        // this.ws.on("message", message => thicatchs.messageSwitcher(message));
 
         Doodad.on("new", entity => this.newEntity(entity));
 
@@ -38,11 +39,11 @@ class App extends EventEmitter2 {
 
     connected(message) {
 
-        this.rng = new RNG(message.state.seed);
+        this.rng = new RNG(message.seed);
         this.emit("rng", this.rng);
 
-        for (let i = 0; i < message.party.length; i++)
-            this.players.push(new Player(message.party[i]));
+        for (let i = 0; i < message.clients.length; i++)
+            this.players.push(new Player(message.clients[i]));
 
         this.localPlayer = new Player({id: message.clientId, isLocalPlayer: true});
         this.players.push(this.localPlayer);
@@ -109,7 +110,7 @@ class App extends EventEmitter2 {
         // console.log("app.update");
         for (let entity of this.activeEntities)
             entity.update(delta);
-        
+
     }
 
 }

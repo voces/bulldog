@@ -56,24 +56,6 @@ class Structure extends Behavior {
             preprocessor: (value) => this.yPreprocessor(value)
         });
 
-        // syncProperty(this, "y", {
-        //     initialValue: props.y || 0,
-        //     preprocessor: (value) => {
-        //         if (this.mesh) this.mesh.position.y = value;
-        //         return value;
-        //     }
-        // });
-
-        // Object.defineProperty(this.entity, "x", {
-        //     set: value => this.setX(value),
-        //     get: () => this.entity._x
-        // })
-        //
-        // Object.defineProperty(this.entity, "y", {
-        //     set: value => this.setY(value),
-        //     get: () => this.entity._y
-        // })
-
     }
 
     xPreprocessor(value) {

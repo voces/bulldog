@@ -9,6 +9,8 @@ class Selection extends Behavior {
         app.mouse.on("selection", entities =>
             entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
 
+        props.entity.selection = this;
+
     }
 
     get selectionCircle() {

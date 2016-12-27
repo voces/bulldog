@@ -4,12 +4,12 @@ class Destructible extends Doodad {
     constructor(props) {
         super(props);
 
-        this.maxHealth = props.maxHealth || props.constructor.maxHealth || 1;
+        let {maxHealth = props.constructor.maxHealth || 1, structure} = props;
 
-        if (props.structure)
-            new Structure({entity: this, structure: props.structure});
-        else
-            this._tilemap = {};
+        this.maxHealth = maxHealth;
+
+        if (structure) new Structure({entity: this, structure: structure});
+        else this._tilemap = {};
 
         new Selection({entity: this, selectable: false});
 

@@ -85,7 +85,7 @@ class Game extends EventEmitter2 {
     onConnected(message) {
 
         //Jsut us
-        if (message.party.length === 0)
+        if (message.clients.length === 0)
             this.start();
             // this.arena.show();
 

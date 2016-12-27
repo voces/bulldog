@@ -17,9 +17,11 @@ class Sheep extends Unit {
 
             this.geometry = geo;
 
+            this.geometry.scale(1.2, 1.2, 1.2);
+
             this.createMesh();
 
-            this.setAnimationSpeed("walk", 7);
+            this.setAnimationSpeed("walk", 21);
             // this.animate("walk");
 
         });
@@ -35,6 +37,6 @@ Sheep.builds = [
     {type: HardFarm}
 ];
 
-Sheep.movementSpeed = 380;
+Sheep.movementSpeed = 95;
 
 TYPES.Sheep = Sheep;

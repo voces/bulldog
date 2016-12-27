@@ -303,17 +303,17 @@ class Tilemap {
         for (let i = 0; i < tiles.length; i++) {
             tiles[i].updateMap();
 
-            let r = -0.5,
-                g = -0.5,
-                b = -0.5;
-
-            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
-                r = 0.5;
-
-            if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
-                b = 0.5;
-
-            tiles[i].addRGB(r, g, b);
+            // let r = -0.5,
+            //     g = -0.5,
+            //     b = -0.5;
+            //
+            // if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_BUILDABLE)
+            //     r = 0.5;
+            //
+            // if (tiles[i].pathing & FOOTPRINT_TYPE.NOT_WALKABLE)
+            //     b = 0.5;
+            //
+            // tiles[i].addRGB(r, g, b);
         }
 
     }
@@ -484,9 +484,16 @@ class Tilemap {
         // path.unshift(this.getTile(entity.x, entity.y));
         // path.push(this.getTile(target.x, target.y));
 
-        return this.smooth(entity, path).map(tile => ({
-            x: this.xTileToWorld(tile.x - 0.5),
-            y: this.yTileToWorld(tile.y + 0.5)}));
+        path = this.smooth(entity, path);
+        path = [
+            {x: entity.x, y: entity.y},
+            ...path.slice(1, path.length - 1).map(tile => ({
+                x: this.xTileToWorld(tile.x - 0.5),
+                y: this.yTileToWorld(tile.y + 0.5)})
+            ),
+            {x: target.x, y: target.y}];
+        
+        return path;
         // return this.smooth(entity, path);
 
     }

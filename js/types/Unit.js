@@ -3,26 +3,31 @@ class Unit extends Destructible {
     constructor(props) {
         super(props);
 
-        this.owner = props.owner;
-        this._selected = false;
+        let {
+            owner, movementSpeed, builds = [],
+            interaction = [...Unit.interaction.map(row => [...row])],
+            hotkey = this.constructor.hotkey,
+            buildTime = this.constructor.buildTime || 0,
+            cost = this.constructor.cost || 0} = props;
 
-        this.interaction = props.interaction || [...Unit.interaction.map(row => [...row])];
+        this.owner = owner;
+        this.hotkey = hotkey;
+        this.buildTime = buildTime;
+        this.cost = cost;
+        this.interaction = interaction;
 
-        if (props.movementSpeed)
-            new Walk({entity: this, movementspeed: props.movementSpeed});
+        if (movementSpeed) new Walk({entity: this, movementSpeed});
 
         this.commandDeck = new CommandDeck();
 
-        if (props.builds)
-            for (let i = 0; i < props.builds.length; i++) {
-                let prop = props.builds[i];
+        if (builds)
+            for (let i = 0; i < builds.length; i++) {
+                let prop = builds[i];
                 prop.action = () => this.seedBuildPlacement(prop.type);
                 this.commandDeck.add(prop);
             }
 
-        this.hotkey = props.hotkey || this.constructor.hotkey;
-        this.buildTime = props.buildTime || this.constructor.buildTime || 0;
-        this.cost = props.cost || this.constructor.cost || 0;
+        this._selected = false;
 
     }
 

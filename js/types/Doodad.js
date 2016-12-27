@@ -5,29 +5,25 @@ class Doodad extends EventEmitter2 {
     constructor(props = {}) {
         super();
 
+        let {x = 0, y = 0, height = 0, scale = 1, radius = 1, visible = true} = props;
+
         this.id = Doodad.id++;
 
         syncProperty(this, "x", {
-            initialValue: props.x || 0,
+            initialValue: x,
             preprocessor: (value) => {
-                if (this.mesh) {
-                    if (typeof value == "function")
-                        this.mesh.position.x = value(syncProperty.time);
-                    else this.mesh.position.x = value;
-                }
+                if (this.mesh && typeof value !== "function")
+                    this.mesh.position.x = value;
 
                 return value;
             }
         });
 
         syncProperty(this, "y", {
-            initialValue: props.y || 0,
+            initialValue: y,
             preprocessor: (value) => {
-                if (this.mesh) {
-                    if (typeof value == "function")
-                        this.mesh.position.y = value(syncProperty.time);
-                    else this.mesh.position.y = value;
-                }
+                if (this.mesh && typeof value !== "function")
+                    this.mesh.position.y = value;
 
                 return value;
             }
@@ -35,17 +31,17 @@ class Doodad extends EventEmitter2 {
 
         // this.x = props.x || 0;
         // this.y = props.y || 0;
-        this.height = props.height || 0;
+        this.height = height;
 
-        this.scale = props.scale || 1;
-        this.radius = props.radius || 1;
+        this.scale = scale;
+        this.radius = radius;
 
         this.behaviors = [];
         this.activeBehaviors = [];
 
         this._dirty = true;
 
-        this._visible = typeof props.visible === "boolean" ? props.visible : true;
+        this._visible = visible;
 
         Doodad.emit("new", this);
 

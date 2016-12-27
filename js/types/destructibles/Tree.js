@@ -16,7 +16,7 @@ class Tree extends Destructible {
         this.geometry = new THREE.Geometry();
 
         this.height = props.height || Math.random() * 16 + 48;
-        this.radius = props.radius || this.height / 4 * (Math.random() / 2 + 0.75);
+        this.radius = props.radius || this.height / 4 * (Math.random() / 2.5 + 0.9);
         this.shelfs = props.shelfs || Math.floor(Math.random() * 2) + 3;
 
         this.createTrunk();
@@ -49,33 +49,29 @@ class Tree extends Destructible {
 
     createShelfs() {
 
+        // console.log(this.height);
+
         let color = new THREE.Color(0x18b309).offsetHSL((Math.random() - 0.5) / 6, 0, 0),
 
             height = this.height,
 
-            shelfRadiusMultiplier = this.radius / 8,
-            shelfRadiusMin = this.radius / 16 * 3,
-            shelfRadiusConstant = this.radius / 16,
+            shelfRadius = this.height * this.radius / this.shelfs * (Math.random() + 4) / 300,
 
-            shelfRadius = Math.random() * shelfRadiusMultiplier + shelfRadiusMin,
-            shelfHeight = Math.random() * shelfRadiusMultiplier + shelfRadiusMin,
-
-            shelfDistanceMultiplier = this.radius / 16 * 10 * 3 / this.shelfs,
-            shelfDistanceConstant = this.radius / 16 * 6 / this.shelfs;
+            shelfRadiusGrowth = this.height / this.shelfs / 10;
 
         for (let i = 0; i < this.shelfs; i++) {
 
             let shelf = new THREE.ConeGeometry(
-                    shelfRadius += Math.random() * shelfRadiusMultiplier + shelfRadiusConstant,
-                    shelfHeight = shelfRadius * 2);
+                    shelfRadius += Math.random() * shelfRadiusGrowth + this.radius / this.shelfs / 5,
+                    shelfRadius * 2);
 
             for (let i = 0; i < shelf.faces.length; i++)
                 shelf.faces[i].color = color.clone();
 
             shelf.radius = shelfRadius;
-            shelf.height = shelfHeight;
+            shelf.height = shelfRadius * 2;
 
-            height -= (shelfHeight/10 + Math.random() * shelfDistanceMultiplier + shelfDistanceConstant);
+            height -= shelfRadius / this.shelfs * (Math.random() + 4) / 1.4;
 
             shelf.rotateX(Math.PI / 2);
             shelf.rotateZ(Math.PI * Math.random());

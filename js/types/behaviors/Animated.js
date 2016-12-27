@@ -34,12 +34,15 @@ class Animated extends Behavior {
 
     animate(animation, weight = 1) {
 
-        let remaining = 1 - weight;
+        let remaining = 1 - weight,
+            action = this.mixer.clipAction(animation);
+
+        if (action.getEffectiveWeight() === weight) return;
 
         for (let i = 0; i < this.animations.length; i++)
             this.mixer.clipAction(this.animations[i].name).setEffectiveWeight(remaining);
 
-        this.mixer.clipAction(animation).setEffectiveWeight(weight).play();
+        action.setEffectiveWeight(weight).play();
 
     }
 

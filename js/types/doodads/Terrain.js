@@ -3,6 +3,10 @@ function faceToVertices(mesh, face) {
     return [mesh.geometry.faces[face.a], mesh.geometry.faces[face.b], mesh.geometry.faces[face.c]];
 }
 
+function orientation(a, b, c) {
+    return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y);
+}
+
 class Terrain extends Doodad {
     constructor(props) {
         super(props);
@@ -130,6 +134,67 @@ class Terrain extends Doodad {
             }
 
         return minHeight;
+
+    }
+
+    groundHeight(x, y) {
+
+        let tile = this.tilemap.grid[this.tilemap.xWorldToTile(x)][this.tilemap.yWorldToTile(y)],
+            pt = {x: x, y: y},
+            triangle;
+
+        // if (this.myLastTile === tile) return;
+
+        // this.myLastTile = tile;
+
+        {
+            let v1 = this.mesh.geometry.vertices[tile.faces[0].a],
+                v2 = this.mesh.geometry.vertices[tile.faces[0].b],
+                v3 = this.mesh.geometry.vertices[tile.faces[0].c];
+
+            // console.log(v1, v2, v3)
+
+            let side1 = Math.abs(orientation(pt, v1, v2)) < 1e-7,
+                side2 = Math.abs(orientation(pt, v2, v3)) < 1e-7,
+                side3 = Math.abs(orientation(pt, v3, v1)) < 1e-7;
+
+            if (side1 === side2 && side2 === side3)
+                triangle = [v1, v2, v3];
+            else
+                triangle = [
+                    this.mesh.geometry.vertices[tile.faces[1].a],
+                    this.mesh.geometry.vertices[tile.faces[1].b],
+                    this.mesh.geometry.vertices[tile.faces[1].c]
+                ];
+        }
+
+        let height;
+
+        // console.log(triangle);
+
+        if (triangle[0].x !== triangle[1].x)
+            //h1 = z + diff.z * percent.x
+            height = triangle[0].z -
+                (triangle[0].z - triangle[1].z) *
+                (x - triangle[0].x) / (triangle[1].x - triangle[0].x);
+        else
+            height = triangle[0].z -
+                (triangle[0].z - triangle[2].z) *
+                (x - triangle[0].x) / (triangle[2].x - triangle[0].x);
+
+        if (triangle[0].y !== triangle[1].y)
+            //h1 = z + diff.z * percent.x
+            height += (triangle[0].z -
+                (triangle[0].z - triangle[1].z) *
+                (y - triangle[0].y) / (triangle[1].y - triangle[0].y));
+        else
+            height += (triangle[0].z -
+                (triangle[0].z - triangle[2].z) *
+                (y - triangle[0].y) / (triangle[2].y - triangle[0].y));
+
+        return height/2;
+
+        // console.log(triangle);
 
     }
 }
