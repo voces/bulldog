@@ -1,82 +1,103 @@
 
+/* globals Behavior, app, SelectionCircle */
+
+// eslint-disable-next-line no-unused-vars
 class Selection extends Behavior {
-    constructor(props) {
-        super(props);
 
-        this.entity.on("hoverOn", intersect => this.onHoverOn(intersect));
-        this.entity.on("hoverOff", intersect => this.onHoverOff(intersect));
+	constructor( props ) {
 
-        app.mouse.on("selection", entities =>
-            entities.indexOf(this.entity) === -1 ? this.deselect() : this.select());
+		super( props );
 
-        props.entity.selection = this;
+		this.entity.on( "hoverOn", intersect => this.onHoverOn( intersect ) );
+		this.entity.on( "hoverOff", intersect => this.onHoverOff( intersect ) );
 
-    }
+		app.mouse.on( "selection", entities =>
+            entities.indexOf( this.entity ) === - 1 ? this.deselect() : this.select() );
 
-    get selectionCircle() {
-        if (this._selectionCircle) return this._selectionCircle;
-        console.log(this.entity.constructor.name, this.entity.radius);
-        this._selectionCircle = new SelectionCircle({
-            rgb: 0xFFFFFF,
-            x: this.entity.x,
-            y: this.entity.y,
-            radius: this.entity.radius
-        });
+		props.entity.selection = this;
 
-        return this._selectionCircle;
-    }
+	}
 
-    onHoverOn(intersect) {
+	get selectionCircle() {
 
-        this.show(0xFFFF00);
+		if ( this._selectionCircle ) return this._selectionCircle;
+		console.log( this.entity.constructor.name, this.entity.radius );
+		this._selectionCircle = new SelectionCircle( {
+			rgb: 0xFFFFFF,
+			x: this.entity.x,
+			y: this.entity.y,
+			radius: this.entity.radius
+		} );
 
-        app.ui.container.style.cursor = "pointer";
-    }
+		return this._selectionCircle;
 
-    onHoverOff(intersect) {
+	}
 
-        app.ui.container.style.cursor = "";
+	onHoverOn( /* intersect */ ) {
 
-        if (this.entity.selected)
-            return this.color = new THREE.Color(0x00FF00);
+		this.show( 0xFFFF00 );
 
-        this.hide();
+		app.ui.container.style.cursor = "pointer";
 
-    }
+	}
 
-    select() {
-        if (app.mouse.selection[0] === this.entity)
-            app.mouse.interaction = this.entity.interaction;
+	onHoverOff( /* intersect */ ) {
 
-        if (this.entity.selected) return;
+		app.ui.container.style.cursor = "";
 
-        this.entity.selected = true;
-        this.show(0x00FF00);
+		if ( this.entity.selected )
+			return this.color = new THREE.Color( 0x00FF00 );
 
-        app.ui.loadDeck(this.entity.commandDeck);
-    }
+		this.hide();
 
-    deselect() {
-        if (!this.entity.selected) return;
-        this.entity.selected = false;
-        this.hide();
-    }
+	}
 
-    set color(value) { this.selectionCircle.color = value; }
-    get color() { return this.selectionCircle.color.getHex() }
+	select() {
 
-    show(rgb) {
+		if ( app.mouse.selection[ 0 ] === this.entity )
+			app.mouse.interaction = this.entity.interaction;
 
-        if (rgb && rgb !== this.color)
-            this.color = new THREE.Color(rgb);
+		if ( this.entity.selected ) return;
 
-        this.selectionCircle.show();
+		this.entity.selected = true;
+		this.show( 0x00FF00 );
 
-    }
+		app.ui.loadDeck( this.entity.commandDeck );
 
-    hide() {
+	}
 
-        this.selectionCircle.hide();
+	deselect() {
 
-    }
+		if ( ! this.entity.selected ) return;
+		this.entity.selected = false;
+		this.hide();
+
+	}
+
+	set color( value ) {
+
+		this.selectionCircle.color = value;
+
+	}
+	get color() {
+
+		return this.selectionCircle.color.getHex();
+
+	}
+
+	show( rgb ) {
+
+		if ( rgb && rgb !== this.color )
+			this.color = new THREE.Color( rgb );
+
+		this.selectionCircle.show();
+
+	}
+
+	hide() {
+
+		this.selectionCircle.hide();
+
+	}
+
 }

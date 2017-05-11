@@ -1,31 +1,35 @@
 
+/* globals Arena, app, Round */
+
 class Game extends EventEmitter2 {
-    constructor() {
-        super();
 
-        this.arenas = Arena.instances;
-        this.arenaId = 0;
+	constructor() {
 
-        this.host = null;
+		super();
 
-        this.entities = [];
-        this.activeEntities = [];
+		this.arenas = Arena.instances;
+		this.arenaId = 0;
 
-        this.settings = {
-            auto: true,             //Game is being auto run (no host)
-            sheep: 1,
-            farmLimit: 300,
-            view: true,
-            random: true,           //Only matters if NOT auto; whether teams are random
-            sheepStartingGold: 100,
-            wolfStartingGold: 100,
-            income: 1,              //Ticker length in seconds (i.e., 1 resource every x seconds)
-            stack: true,            //Are stacks enabled?
-            timeLimit: 120,
-            arena: 0
-        };
+		this.host = null;
 
-        this.initAppListeners();
+		this.entities = [];
+		this.activeEntities = [];
+
+		this.settings = {
+			auto: true,             //Game is being auto run (no host)
+			sheep: 1,
+			farmLimit: 300,
+			view: true,
+			random: true,           //Only matters if NOT auto; whether teams are random
+			sheepStartingGold: 100,
+			wolfStartingGold: 100,
+			income: 1,              //Ticker length in seconds (i.e., 1 resource every x seconds)
+			stack: true,            //Are stacks enabled?
+			timeLimit: 120,
+			arena: 0
+		};
+
+		this.initAppListeners();
 
         // Unit.on("hoverOn", () => this.ui.enablePointerCursor());
         // Unit.on("hoverOff", () => this.ui.disablePointerCursor());
@@ -38,9 +42,9 @@ class Game extends EventEmitter2 {
         //
         // this.on("selection", selection => this.localPlayer.selection = selection);
 
-    }
+	}
 
-    initAppListeners() {
+	initAppListeners() {
 
         // app.on("hoverOn", intersect => intersect.object.entity.emit("hoverOn", intersect));
         // app.on("hoverOff", (oldIntersect, newIntersect) => {
@@ -53,46 +57,46 @@ class Game extends EventEmitter2 {
         // app.on("mouseDown", (intersect, e) => intersect.object.entity.emit("mouseDown", intersect, e));
         // app.on("mouseUp", (intersect, e) => intersect.object.entity.emit("mouseUp", intersect, e));
 
-        app.on("rng", rng => this.rng = rng);
+		app.on( "rng", rng => this.rng = rng );
 
-        app.on("connected", message => this.onConnected(message));
+		app.on( "connected", message => this.onConnected( message ) );
 
-    }
+	}
 
-    showArena(i) {
+	showArena( i ) {
 
-        this.arena = this.arenas[i % this.arenas.length];
-
-
+		this.arena = this.arenas[ i % this.arenas.length ];
 
         // this.emit("clean");
         // this.emit("show", this.arenas[this.arena].terrain);
         // for (let i = 0; i < this.arenas[this.arena].entities.length; i++)
         //     this.emit("show", this.arenas[this.arena].entities[i]);
 
-    }
+	}
 
-    start() {
+	start() {
 
         // this.emit("clean");
 
-        this.round = new Round(this);
+		this.round = new Round( this );
 
-    }
+	}
 
-    get arena() { return this.arenas[this.arenaId]; }
+	get arena() {
 
-    onConnected(message) {
+		return this.arenas[ this.arenaId ];
+
+	}
+
+	onConnected( message ) {
 
         //Jsut us
-        if (message.clients.length === 0)
-            this.start();
+		if ( message.clients.length === 0 )
+			this.start();
             // this.arena.show();
 
-
-    }
-
+	}
 
 }
 
-let game = new Game();
+window.game = new Game();

@@ -1,117 +1,147 @@
 
+/* globals EventEmitter2, Graphic, Mouse, UI, WS, Doodad, RNG, Player */
+
 class App extends EventEmitter2 {
 
-    constructor() {
-        super({maxListeners: 20});
+	constructor() {
 
-        this.players = [];
+		super( { maxListeners: 20 } );
 
-        this.entities = [];
-        this.activeEntities = new Set();
-        this.dirtyEntities = [];
+		this.players = [];
 
-        this.graphic = new Graphic();
+		this.entities = [];
+		this.activeEntities = new Set();
+		this.dirtyEntities = [];
 
-        this.mouse = new Mouse(this);
+		this.graphic = new Graphic();
 
-        this.ui = new UI();
+		this.mouse = new Mouse( this );
 
-        this.ui.showResourceDisplay();
-        this.ui.showCommandDeck();
+		this.ui = new UI();
 
-        this.ws = new WS();
-        this.ws.on("open", () => this.ws.subscribe("bulldog").then(m => this.connected(m)));
+		this.ui.showResourceDisplay();
+		this.ui.showCommandDeck();
+
+		this.ws = new WS();
+		this.ws.on( "open", () => this.ws.subscribe( "bulldog" ).then( m => this.connected( m ) ) );
         // this.ws.on("message", message => thicatchs.messageSwitcher(message));
 
-        Doodad.on("new", entity => this.newEntity(entity));
+		Doodad.on( "new", entity => this.newEntity( entity ) );
 
-        this.graphic.updates.push(this);
+		this.graphic.updates.push( this );
 
-    }
+		this.ws.on( "message", data => {
 
-    messageSwitcher(message) {
-        if (message.origin === -1)
-            switch (message.eid) {
-                case "connected": this.connected(message);
-            }
-        else this.emit(message.eid, message);
-    }
+			if ( data.entity )
+				this.entities[ data.entity ].emit( data.id || "push", data );
 
-    connected(message) {
+		} );
 
-        this.rng = new RNG(message.seed);
-        this.emit("rng", this.rng);
+	}
 
-        for (let i = 0; i < message.clients.length; i++)
-            this.players.push(new Player(message.clients[i]));
+	messageSwitcher( message ) {
 
-        this.localPlayer = new Player({id: message.clientId, isLocalPlayer: true});
-        this.players.push(this.localPlayer);
-        this.localPlayer.on("currency", value => this.ui.currency = value);
+		if ( message.origin === - 1 )
+			switch ( message.eid ) {
 
-        this.ws.localPlayer = this.localPlayer;
+				case "connected": this.connected( message );
 
-        this.emit("connected", message);
+			}
+		else this.emit( message.eid, message );
 
-    }
+	}
 
-    newEntity(entity) {
+	connected( message ) {
 
-        this.entities.push(entity);
+		this.rng = new RNG( message.seed );
+		this.emit( "rng", this.rng );
 
-        if (entity.mesh && entity.visible) this.showMesh(entity);
+		for ( let i = 0; i < message.clients.length; i ++ )
+			this.players.push( new Player( message.clients[ i ] ) );
 
-        if (entity.active) this.activeEntities.add(entity);
+		this.localPlayer = new Player( { id: message.clientId, isLocalPlayer: true } );
+		this.players.push( this.localPlayer );
+		this.localPlayer.on( "currency", value => this.ui.currency = value );
 
-        //When the entity is DESTROYED, non-recoverable
-        entity.on("remove", () => this.remove(entity));
+		this.ws.localPlayer = this.localPlayer;
+
+		this.emit( "connected", message );
+
+	}
+
+	newEntity( entity ) {
+
+		if ( ! entity.ignore ) this.entities.push( entity );
+
+		if ( entity.mesh && entity.visible ) this.showMesh( entity );
+
+		if ( entity.active ) this.activeEntities.add( entity );
 
         // console.log("newEntity", entity.constructor.name);
-        entity.on("show", () => this.showMesh(entity));
-        entity.on("hide", () => this.hideMesh(entity));
+		entity.on( "show", () => this.showMesh( entity ) );
+		entity.on( "hide", () => this.hideMesh( entity ) );
 
         //If the entity is put through the update loop
-        entity.on("active", () => this.activeEntities.add(entity));
-        entity.on("inactive", () => this.activeEntities.remove(entity));
+		entity.on( "active", () => this.activeEntities.add( entity ) );
+		entity.on( "inactive", () => this.activeEntities.remove( entity ) );
 
-        entity.on("dirty", () => this.dirtyEntities.push(entity));
-        this.dirtyEntities.push(entity);
+		entity.on( "dirty", () => this.dirtyEntities.push( entity ) );
+		this.dirtyEntities.push( entity );
 
-    }
+		//When the entity is DESTROYED, non-recoverable
+		entity.on( "remove", () => this.removeEntity( entity ) );
 
-    showMesh(entity) {
-        if (entity._meshAdded) this.graphic.scene.remove(entity._meshAdded);
-        if (!entity.mesh) return;
+	}
 
-        entity._meshAdded = entity.mesh;
-        this.graphic.scene.add(entity.mesh);
-    }
+	removeEntity( entity ) {
 
-    hideMesh(entity) {
+		this.hideMesh( entity );
 
-        if (!entity._meshAdded) return;
+		const index = this.entities.indexOf( entity );
+		if ( index >= 0 ) this.entities[ index ] = undefined;
 
-        this.graphic.scene.remove(entity._meshAdded);
-        entity._meshAdded = false;
+		if ( entity._meshAdded ) this.graphic.scene.remove( entity._meshAdded );
 
-    }
+		if ( entity.active ) this.activeEntities.remove( entity );
 
-    removeEntity(entity) {
+	}
 
-        this.entities.splice(this.entities.indexOf(entity), 1);
+	showMesh( entity ) {
 
-        if (entity._meshAdded) this.graphic.scene.remove(entity._meshAdded);
+		if ( entity._meshAdded ) this.graphic.scene.remove( entity._meshAdded );
+		if ( ! entity.mesh ) return;
 
-        if (entity.active) this.activeEntities.remove(entity);
+		entity._meshAdded = entity.mesh;
+		this.graphic.scene.add( entity.mesh );
 
-    }
+	}
 
-    update(delta) {
+	hideMesh( entity ) {
+
+		if ( ! entity._meshAdded ) return;
+
+		this.graphic.scene.remove( entity._meshAdded );
+		entity._meshAdded = false;
+
+	}
+
+	// removeEntity( entity ) {
+	//
+	// 	this.entities.splice( this.entities.indexOf( entity ), 1 );
+	//
+	// 	if ( entity._meshAdded ) this.graphic.scene.remove( entity._meshAdded );
+	//
+	// 	if ( entity.active ) this.activeEntities.remove( entity );
+	//
+	// }
+
+	update( delta ) {
+
         // console.log("app.update");
-        for (let entity of this.activeEntities)
-            entity.update(delta);
+		for ( let entity of this.activeEntities )
+			entity.update( delta );
 
-    }
+	}
 
 }
 

@@ -1,200 +1,240 @@
 
-function faceToVertices(mesh, face) {
-    return [mesh.geometry.faces[face.a], mesh.geometry.faces[face.b], mesh.geometry.faces[face.c]];
+/* globals Doodad, TERRAIN, Tilemap */
+
+// function faceToVertices( mesh, face ) {
+//
+// 	return [ mesh.geometry.faces[ face.a ], mesh.geometry.faces[ face.b ], mesh.geometry.faces[ face.c ] ];
+//
+// }
+
+function orientation( a, b, c ) {
+
+	return ( a.x - c.x ) * ( b.y - c.y ) - ( b.x - c.x ) * ( a.y - c.y );
+
 }
 
-function orientation(a, b, c) {
-    return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y);
-}
-
+// eslint-disable-next-line no-unused-vars
 class Terrain extends Doodad {
-    constructor(props) {
-        super(props);
 
-        props.width = props.width || 1;
-        props.height = props.height || 1;
-        props.orientation = props.orientation || [];
-        props.heightMap = props.heightMap || [];
-        props.colors = props.colors || [];
-        props.tileMap = props.tileMap || [];
+	constructor( props ) {
 
-        this.width = props.width*TERRAIN.TILE_SIZE*TERRAIN.TILE_PARTS;
-        this.height = props.height*TERRAIN.TILE_SIZE*TERRAIN.TILE_PARTS;
+		super( props );
 
-        this.minX = this.width / -2;
-        this.maxX = this.width / 2;
-        this.minY = this.height / -2;
-        this.maxY = this.height / 2;
+		props.width = props.width || 1;
+		props.height = props.height || 1;
+		props.orientation = props.orientation || [];
+		props.heightMap = props.heightMap || [];
+		props.colors = props.colors || [];
+		props.tileMap = props.tileMap || [];
 
-        this.geometry = new THREE.PlaneGeometry(this.width, this.height, this.width/TERRAIN.TILE_SIZE, this.height/TERRAIN.TILE_SIZE);
-        // for (let i = 0; i < this.geometry.faces.length; i++)
-        //     this.geometry.faces[i].color.setHex(0xF4A460);
+		this.width = props.width * TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS;
+		this.height = props.height * TERRAIN.TILE_SIZE * TERRAIN.TILE_PARTS;
 
-        // console.log(this.geometry.vertices, this.geometry.faces);
-        // console.log(this.geometry.vertices.length, this.geometry.faces.length);
-        // console.log(orientation.length, heightmap.length);
+		this.minX = this.width / - 2;
+		this.maxX = this.width / 2;
+		this.minY = this.height / - 2;
+		this.maxY = this.height / 2;
 
-        for (let i = 0; i < props.heightMap.length && i < this.geometry.vertices.length; i++) {
-            if (props.heightMap[i]) {
-                // console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
-                this.geometry.vertices[i].z = props.heightMap[i]*2;
-            }
-            // this.geometry.vertices[i].x += TERRAIN.TILE_PARTS/2 * (Math.random() - 0.5);
-            // this.geometry.vertices[i].y += TERRAIN.TILE_PARTS/2 * (Math.random() - 0.5);
-        }
+		this.geometry = new THREE.PlaneGeometry( this.width, this.height, this.width / TERRAIN.TILE_SIZE, this.height / TERRAIN.TILE_SIZE );
+		// for (let i = 0; i < this.geometry.faces.length; i++)
+		//     this.geometry.faces[i].color.setHex(0xF4A460);
 
-        //Rotate some squares (makes stuff look a bit less uniform)
-        for (let i = 0; i < this.geometry.faces.length/2; i++)
+		// console.log(this.geometry.vertices, this.geometry.faces);
+		// console.log(this.geometry.vertices.length, this.geometry.faces.length);
+		// console.log(orientation.length, heightmap.length);
 
-            if (props.orientation[i]) {
-                if (props.orientation[i] === 2) {
-                    // console.log(i);
-                    this.geometry.faces[i*2].c = this.geometry.faces[i*2+1].b;
-                    this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
-                }
-            // }
-            } else if (Math.random() < 0.5) {
-            // } else {
-                this.geometry.faces[i*2].c = this.geometry.faces[i*2+1].b;
-                this.geometry.faces[i*2+1].a = this.geometry.faces[i*2].a;
-            }
+		for ( let i = 0; i < props.heightMap.length && i < this.geometry.vertices.length; i ++ ) {
 
-        this.tilemap = new Tilemap(props.width*TERRAIN.TILE_PARTS, props.height*TERRAIN.TILE_PARTS, this.geometry, props.orientation, props.tileMap);
+			if ( props.heightMap[ i ] ) {
 
-        this.geometry.computeFaceNormals();
-        this.geometry.computeVertexNormals();
+				// console.log(this.geometry.vertices[i] ? true : false, heightmap[i], i);
+				this.geometry.vertices[ i ].z = props.heightMap[ i ] * 2;
 
-        for (let i = 0; i < props.colors.length; i++) {
-            if (props.colors[i]) {
-                this.geometry.faces[i*2].color.setHex(props.colors[i])
-                this.geometry.faces[i*2+1].color.setHex(props.colors[i])
-            } else {
-                this.geometry.faces[i*2].color.setHex(0xF4A460);
-                this.geometry.faces[i*2+1].color.setHex(0xF4A460);
-            }
-        }
+			}
+			// this.geometry.vertices[i].x += TERRAIN.TILE_PARTS/2 * (Math.random() - 0.5);
+			// this.geometry.vertices[i].y += TERRAIN.TILE_PARTS/2 * (Math.random() - 0.5);
 
-        this.simpleTileMap = props.tileMap;
+		}
 
-        this.createMesh();
+		//Rotate some squares (makes stuff look a bit less uniform)
+		for ( let i = 0; i < this.geometry.faces.length / 2; i ++ )
 
-        this.on("hoverFace", intersect => {
-            console.log(intersect);
-        });
+			if ( props.orientation[ i ] ) {
 
-        // this.on("hover", intersect => {
-        //     let tile = this.tilemap.getTile(intersect.point.x, intersect.point.y);
-        //     console.log(tile.minHeight.toFixed(2), "-", tile.maxHeight.toFixed(2));
-        //     // console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
-        // });
+				if ( props.orientation[ i ] === 2 ) {
 
-        this.on("mouseDown", (intersect, e) => {
-            if (e.button === 2) this.emit("autoGround", intersect, e);
-        });
+				// console.log(i);
+					this.geometry.faces[ i * 2 ].c = this.geometry.faces[ i * 2 + 1 ].b;
+					this.geometry.faces[ i * 2 + 1 ].a = this.geometry.faces[ i * 2 ].a;
 
-    }
+				}
+			// }
 
-    get wireframe() {
+			} else if ( Math.random() < 0.5 ) {
 
-        if (typeof this._wireframe !== "undefined") return this._wireframe;
+			// } else {
+				this.geometry.faces[ i * 2 ].c = this.geometry.faces[ i * 2 + 1 ].b;
+				this.geometry.faces[ i * 2 + 1 ].a = this.geometry.faces[ i * 2 ].a;
 
-        let geometry = new THREE.EdgesGeometry(this.mesh.geometry),
-            material = new THREE.LineBasicMaterial();
+			}
 
-        this._wireframe = new THREE.LineSegments(geometry, material);
+		this.tilemap = new Tilemap( props.width * TERRAIN.TILE_PARTS, props.height * TERRAIN.TILE_PARTS, this.geometry, props.orientation, props.tileMap );
 
-        this._wireframe.entity = this;
+		this.geometry.computeFaceNormals();
+		this.geometry.computeVertexNormals();
 
-        return this._wireframe;
+		for ( let i = 0; i < props.colors.length; i ++ ) {
 
-    }
+			if ( props.colors[ i ] ) {
 
-    getTile(x, y) {
-        x = Math.floor((x + this.width / 2) / TERRAIN.TILE_SIZE);
-        y = this.height / TERRAIN.TILE_SIZE - Math.floor((y + this.height / 2) / TERRAIN.TILE_SIZE) - 1;
+				this.geometry.faces[ i * 2 ].color.setHex( props.colors[ i ] );
+				this.geometry.faces[ i * 2 + 1 ].color.setHex( props.colors[ i ] );
 
-        let tile = this.simpleTileMap[`${x},${y}`];
-        return tile === undefined ? -1 : tile;
-    }
+			} else {
 
-    minHeight(x, y, radius = 0) {
+				this.geometry.faces[ i * 2 ].color.setHex( 0xF4A460 );
+				this.geometry.faces[ i * 2 + 1 ].color.setHex( 0xF4A460 );
 
-        let minX = this.tilemap.xWorldToTile(x - radius),
-            maxX = this.tilemap.xWorldToTile(x + radius),
-            minY = this.tilemap.yWorldToTile(y + radius),
-            maxY = this.tilemap.yWorldToTile(y - radius),
+			}
 
-            minHeight = Infinity;
+		}
 
-        for (let x = minX; x <= maxX; x++)
-            for (let y = minY; y <= maxY; y++) {
-                let height = this.tilemap.grid[x][y].minHeight;
+		this.simpleTileMap = props.tileMap;
 
-                if (height < minHeight) minHeight = height;
-            }
+		this.createMesh();
 
-        return minHeight;
+		// this.on( "hoverFace", intersect => {
+		//
+		// 	console.log( intersect );
+		//
+		// } );
 
-    }
+		// this.on( "hover", console.log );
 
-    groundHeight(x, y) {
+		// this.on("hover", intersect => {
+		//     let tile = this.tilemap.getTile(intersect.point.x, intersect.point.y);
+		//     console.log(tile.minHeight.toFixed(2), "-", tile.maxHeight.toFixed(2));
+		//     // console.log(intersect.point, this.getTile(intersect.point.x, intersect.point.y));
+		// });
 
-        let tile = this.tilemap.grid[this.tilemap.xWorldToTile(x)][this.tilemap.yWorldToTile(y)],
-            pt = {x: x, y: y},
-            triangle;
+		this.on( "mouseDown", ( intersect, e ) => {
 
-        // if (this.myLastTile === tile) return;
+			console.log( "mouseDown" );
 
-        // this.myLastTile = tile;
+			if ( e.button === 2 ) this.emit( "autoGround", intersect, e );
 
-        {
-            let v1 = this.mesh.geometry.vertices[tile.faces[0].a],
-                v2 = this.mesh.geometry.vertices[tile.faces[0].b],
-                v3 = this.mesh.geometry.vertices[tile.faces[0].c];
+		} );
 
-            // console.log(v1, v2, v3)
+	}
 
-            let side1 = Math.abs(orientation(pt, v1, v2)) < 1e-7,
-                side2 = Math.abs(orientation(pt, v2, v3)) < 1e-7,
-                side3 = Math.abs(orientation(pt, v3, v1)) < 1e-7;
+	get wireframe() {
 
-            if (side1 === side2 && side2 === side3)
-                triangle = [v1, v2, v3];
-            else
-                triangle = [
-                    this.mesh.geometry.vertices[tile.faces[1].a],
-                    this.mesh.geometry.vertices[tile.faces[1].b],
-                    this.mesh.geometry.vertices[tile.faces[1].c]
-                ];
-        }
+		if ( typeof this._wireframe !== "undefined" ) return this._wireframe;
 
-        let height;
+		let geometry = new THREE.EdgesGeometry( this.mesh.geometry ),
+			material = new THREE.LineBasicMaterial();
 
-        // console.log(triangle);
+		this._wireframe = new THREE.LineSegments( geometry, material );
 
-        if (triangle[0].x !== triangle[1].x)
-            //h1 = z + diff.z * percent.x
-            height = triangle[0].z -
-                (triangle[0].z - triangle[1].z) *
-                (x - triangle[0].x) / (triangle[1].x - triangle[0].x);
-        else
-            height = triangle[0].z -
-                (triangle[0].z - triangle[2].z) *
-                (x - triangle[0].x) / (triangle[2].x - triangle[0].x);
+		this._wireframe.entity = this;
 
-        if (triangle[0].y !== triangle[1].y)
-            //h1 = z + diff.z * percent.x
-            height += (triangle[0].z -
-                (triangle[0].z - triangle[1].z) *
-                (y - triangle[0].y) / (triangle[1].y - triangle[0].y));
-        else
-            height += (triangle[0].z -
-                (triangle[0].z - triangle[2].z) *
-                (y - triangle[0].y) / (triangle[2].y - triangle[0].y));
+		return this._wireframe;
 
-        return height/2;
+	}
 
-        // console.log(triangle);
+	getTile( x, y ) {
 
-    }
+		x = Math.floor( ( x + this.width / 2 ) / TERRAIN.TILE_SIZE );
+		y = this.height / TERRAIN.TILE_SIZE - Math.floor( ( y + this.height / 2 ) / TERRAIN.TILE_SIZE ) - 1;
+
+		let tile = this.simpleTileMap[ `${x},${y}` ];
+		return tile === undefined ? - 1 : tile;
+
+	}
+
+	minHeight( x, y, radius = 0 ) {
+
+		let minX = this.tilemap.xWorldToTile( x - radius ),
+			maxX = this.tilemap.xWorldToTile( x + radius ),
+			minY = this.tilemap.yWorldToTile( y + radius ),
+			maxY = this.tilemap.yWorldToTile( y - radius ),
+
+			minHeight = Infinity;
+
+		for ( let x = minX; x <= maxX; x ++ )
+			for ( let y = minY; y <= maxY; y ++ ) {
+
+				let height = this.tilemap.grid[ x ][ y ].minHeight;
+
+				if ( height < minHeight ) minHeight = height;
+
+			}
+
+		return minHeight;
+
+	}
+
+	groundHeight( x, y ) {
+
+		let tile = this.tilemap.grid[ this.tilemap.xWorldToTile( x ) ][ this.tilemap.yWorldToTile( y ) ],
+			pt = { x: x, y: y },
+			triangle;
+
+		// if (this.myLastTile === tile) return;
+
+		// this.myLastTile = tile;
+
+		{
+
+			let v1 = this.mesh.geometry.vertices[ tile.faces[ 0 ].a ],
+				v2 = this.mesh.geometry.vertices[ tile.faces[ 0 ].b ],
+				v3 = this.mesh.geometry.vertices[ tile.faces[ 0 ].c ];
+
+			// console.log(v1, v2, v3)
+
+			let side1 = Math.abs( orientation( pt, v1, v2 ) ) < 1e-7,
+				side2 = Math.abs( orientation( pt, v2, v3 ) ) < 1e-7,
+				side3 = Math.abs( orientation( pt, v3, v1 ) ) < 1e-7;
+
+			if ( side1 === side2 && side2 === side3 )
+				triangle = [ v1, v2, v3 ];
+			else
+				triangle = [
+					this.mesh.geometry.vertices[ tile.faces[ 1 ].a ],
+					this.mesh.geometry.vertices[ tile.faces[ 1 ].b ],
+					this.mesh.geometry.vertices[ tile.faces[ 1 ].c ]
+				];
+
+		}
+
+		let height;
+
+		// console.log(triangle);
+
+		if ( triangle[ 0 ].x !== triangle[ 1 ].x )
+		//h1 = z + diff.z * percent.x
+			height = triangle[ 0 ].z -
+				( triangle[ 0 ].z - triangle[ 1 ].z ) *
+				( x - triangle[ 0 ].x ) / ( triangle[ 1 ].x - triangle[ 0 ].x );
+		else
+			height = triangle[ 0 ].z -
+				( triangle[ 0 ].z - triangle[ 2 ].z ) *
+				( x - triangle[ 0 ].x ) / ( triangle[ 2 ].x - triangle[ 0 ].x );
+
+		if ( triangle[ 0 ].y !== triangle[ 1 ].y )
+		//h1 = z + diff.z * percent.x
+			height += ( triangle[ 0 ].z -
+				( triangle[ 0 ].z - triangle[ 1 ].z ) *
+				( y - triangle[ 0 ].y ) / ( triangle[ 1 ].y - triangle[ 0 ].y ) );
+		else
+			height += ( triangle[ 0 ].z -
+				( triangle[ 0 ].z - triangle[ 2 ].z ) *
+				( y - triangle[ 0 ].y ) / ( triangle[ 2 ].y - triangle[ 0 ].y ) );
+
+		return height / 2;
+
+				// console.log(triangle);
+
+	}
+
 }

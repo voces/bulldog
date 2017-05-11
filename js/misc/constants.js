@@ -1,13 +1,13 @@
 
-const FILTER = {
-    NONE: {
-        type: class None {}
-    }
+window.FILTER = {
+	NONE: {
+		type: class None {}
+	}
 };
 
-const TERRAIN = {
-    TILE_SIZE: 8,
-    TILE_PARTS: 4,
-    TILE_HEIGHT: 4,
-    TILE_STRUCTURE_PARTS: 2
+window.TERRAIN = {
+	TILE_SIZE: 8,
+	TILE_PARTS: 4,
+	TILE_HEIGHT: 4,
+	TILE_STRUCTURE_PARTS: 2
 };

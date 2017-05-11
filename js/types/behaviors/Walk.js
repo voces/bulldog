@@ -1,282 +1,219 @@
 
 //TODO: This behavior never turns off; to do so, it'd need a way to turn on autonmously...
 
-function box(x, y, color = 0x000000) {
-    let box = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 20), new THREE.MeshBasicMaterial({color: color}));
+/* globals app, Behavior, Terrain, Destructible, syncProperty  */
 
-    box.position.x = x;
-    box.position.y = y;
-
-    app.graphic.scene.add(box);
-
-    return box;
-
-}
-
-function connection(x, y, length, angle) {
-    let box = new THREE.Mesh(new THREE.BoxBufferGeometry(1, length, 1), new THREE.MeshBasicMaterial());
-
-    box.position.x = x;
-    box.position.y = y;
-    box.position.z = 2;
-
-    box.rotation.z = angle + Math.PI/2;
-
-    app.graphic.scene.add(box);
-
-    return box;
-}
-
+// eslint-disable-next-line no-unused-vars
 class Walk extends Behavior {
 
-    constructor(props) {
-        super(props);
+	constructor( props ) {
 
-        this.entity = props.entity;
+		super( props );
 
-        this.movementSpeed = props.movementSpeed || 100;
-        this.turnSpeed = props.turnSpeed / Math.PI / 2 || Math.PI / 16;
+		this.entity = props.entity;
 
-        this.entity.walk = point => this.walk(point);
+		this.movementSpeed = props.movementSpeed || 100;
+		this.turnSpeed = props.turnSpeed / Math.PI / 2 || Math.PI / 16;
 
-        this.entity.interaction[2].push({
-            filter: entity => entity instanceof Terrain,
-            callback: Walk.rightClickTerrainToWalk
-        }, {
-            filter: entity => entity instanceof Destructible,
-            callback: Walk.rightclickDestructibleToWalk
-        });
+		this.entity.walk = point => this.walk( point );
+		this.entity.calcWalk = point => this.calcWalk( point );
 
-        this._smoothing = 0.3;
-        this._lastSmoothed = false;
+		this.entity.interaction[ 2 ].push( {
+			filter: entity => entity instanceof Terrain,
+			callback: Walk.rightClickTerrainToWalk
+		}, {
+			filter: entity => entity instanceof Destructible,
+			callback: Walk.rightClickDestructibleToWalk
+		} );
 
-    }
+		this._smoothing = 0.3;
+		this._lastSmoothed = false;
 
-    static rightClickTerrainToWalk(intersect) {
-        for (let i = 0; i < app.mouse.selection.length; i++)
-            app.mouse.selection[i].walk(intersect.point);
-    }
+		this.entity.on( "walk", data => this.onWalk( data ) );
 
-    static rightclickDestructibleToWalk(intersect) {
-        for (let i = 0; i < app.mouse.selection.length; i++)
-            app.mouse.selection[i].walk(app.mouse.topIntersect([{filter: entity => entity instanceof Terrain}]).point);
-    }
+	}
 
-    walk(point) {
+	static rightClickTerrainToWalk( intersect ) {
 
-        let sent = Date.now();
-        app.ws.json({id: "walk", point: point}).then(({point}) => {
+		for ( let i = 0; i < app.mouse.selection.length; i ++ )
+			app.mouse.selection[ i ].walk( intersect.point );
 
-            let xTile = app.terrain.tilemap.xWorldToTile(point.x),
-                yTile = app.terrain.tilemap.yWorldToTile(point.y),
+	}
 
-                target;
+	static rightClickDestructibleToWalk( /* intersect */ ) {
 
-            if (app.terrain.tilemap.pathable(this.entity.tilemap, xTile, yTile))
-                target = point;
-            else
-                target = app.terrain.tilemap.nearestPathing(point.x, point.y, this.entity);
+		for ( let i = 0; i < app.mouse.selection.length; i ++ )
+			app.mouse.selection[ i ].walk( app.mouse.topIntersect( [ { filter: entity => entity instanceof Terrain } ] ).point );
 
-            xTile = app.terrain.tilemap.xWorldToTile(target.x);
-            yTile = app.terrain.tilemap.yWorldToTile(target.y);
+	}
 
-            let map = app.terrain.tilemap.pointToTilemap(target.x, target.y, this.entity.radius),
-                tiles = [];
+	walk( point ) {
 
-            for (let x = map.left; x < map.width + map.left; x++)
-                for (let y = map.top; y < map.height + map.top; y++)
-                    tiles.push(app.terrain.tilemap.grid[xTile + x][yTile + y]);
+		app.ws.json( { id: "walk", point: point, entity: this.entity.id } );
 
-            let path = app.terrain.tilemap.path(this.entity, target),
-                current = -1;
+	}
 
-            path[0].start = syncProperty.time;
-            for (let i = 1; i < path.length; i++) {
-                let distance = Math.sqrt((path[i].x - path[i-1].x)**2 + (path[i].y - path[i-1].y)**2);
+	onWalk( { point } ) {
 
-                path[i-1].distance = distance;
-                path[i-1].xDistance = path[i].x - path[i-1].x;
-                path[i-1].yDistance = path[i].y - path[i-1].y;
-                path[i-1].duration = distance / this.movementSpeed * 1000;
-                path[i-1].angle = Math.atan2(path[i].y - path[i-1].y, path[i].x - path[i-1].x);
-                path[i-1].end = path[i-1].start + path[i-1].duration;
-                path[i].start = path[i-1].end;
-            }
+		const path = this.calcWalk( point );
 
-            // console.log(path.map(p => p.angle));
+		let current = - 1;
 
-            this.entity.x = time => {
+		this.entity.x = time => {
 
-                let oldCurrent = current;
+			let oldCurrent = current;
 
-                while (current === -1 || (current < path.length -1 && time >= path[current].end))
-                    current++;
+			while ( current === - 1 || ( current < path.length - 1 && time >= path[ current ].end ) )
+				current ++;
 
-                if (oldCurrent !== current && current !== path.length - 1) {
+			if ( oldCurrent !== current && current !== path.length - 1 ) {
 
-                    if (Math.abs(this.entity.mesh.rotation.z) >= Math.PI)
-                        this.entity.mesh.rotation.z = this.entity.mesh.rotation.z % Math.PI
+				if ( Math.abs( this.entity.mesh.rotation.z ) >= Math.PI )
+					this.entity.mesh.rotation.z = this.entity.mesh.rotation.z % Math.PI;
 
-                    this.heading = path[current].angle;
-                    let difference = this.entity.mesh.rotation.z - path[current].angle;
+				this.heading = path[ current ].angle;
+				let difference = this.entity.mesh.rotation.z - path[ current ].angle;
 
-                    if (Math.abs(difference) >= Math.PI) {
-                        if (difference > 0) this.heading += Math.PI*2;
-                        else this.entity.mesh.rotation.z -= Math.PI*2;
+				if ( Math.abs( difference ) >= Math.PI ) {
 
-                    }
+					if ( difference > 0 ) this.heading += Math.PI * 2;
+					else this.entity.mesh.rotation.z -= Math.PI * 2;
 
-                    // console.log(this.heading, this.entity.mesh.rotation.z);
+				}
 
-                    // console.log(this.entity.mesh.rotation.z, path[current].angle, this.entity.mesh.rotation.z - path[current].angle);
-                }
+			}
 
-                if (current === path.length - 1) {
-                    this.entity.x = path[path.length - 1].x;
-                    return path[path.length - 1].x;
-                }
+			if ( current === path.length - 1 ) {
 
-                return path[current].x + path[current].xDistance * ((time - path[current].start) / path[current].duration);
+				this.entity.x = path[ path.length - 1 ].x;
+				return path[ path.length - 1 ].x;
 
-            };
+			}
 
-            this.entity.y = time => {
+			return path[ current ].x + path[ current ].xDistance * ( ( time - path[ current ].start ) / path[ current ].duration );
 
-                while (current < path.length -1 && time >= path[current].end)
-                    current++;
+		};
 
-                if (current === path.length - 1) {
-                    this.entity.y = path[path.length - 1].y;
-                    return path[path.length - 1].y;
-                }
+		this.entity.y = time => {
 
-                return path[current].y + path[current].yDistance * ((time - path[current].start) / path[current].duration);
+			while ( current < path.length - 1 && time >= path[ current ].end )
+				current ++;
 
-            };
+			if ( current === path.length - 1 ) {
 
-            this.active = true;
+				this.entity.y = path[ path.length - 1 ].y;
+				return path[ path.length - 1 ].y;
 
-        });
+			}
 
-        return;
+			return path[ current ].y + path[ current ].yDistance * ( ( time - path[ current ].start ) / path[ current ].duration );
 
-        {
-            let xTile = app.terrain.tilemap.xWorldToTile(point.x),
-                yTile = app.terrain.tilemap.yWorldToTile(point.y),
+		};
 
-                target;
+		this.active = true;
 
-            if (app.terrain.tilemap.pathable(this.entity.tilemap, xTile, yTile))
-                target = point;
-            else
-                target = app.terrain.tilemap.nearestPathing(point.x, point.y, this.entity);
+	}
 
-            xTile = app.terrain.tilemap.xWorldToTile(target.x);
-            yTile = app.terrain.tilemap.yWorldToTile(target.y);
+	calcWalk( point ) {
 
-            let map = app.terrain.tilemap.pointToTilemap(target.x, target.y, this.entity.radius),
-                tiles = [];
+		let xTile = app.terrain.tilemap.xWorldToTile( point.x ),
+			yTile = app.terrain.tilemap.yWorldToTile( point.y ),
 
-            for (let x = map.left; x < map.width + map.left; x++)
-                for (let y = map.top; y < map.height + map.top; y++)
-                    tiles.push(app.terrain.tilemap.grid[xTile + x][yTile + y]);
+			target;
 
-            let path = app.terrain.tilemap.path(this.entity, target);
+		if ( app.terrain.tilemap.pathable( this.entity.tilemap, xTile, yTile ) )
+			target = point;
+		else
+			target = app.terrain.tilemap.nearestPathing( point.x, point.y, this.entity );
 
-            for (let i = 1; i < path.length; i++) {
-                let length = Math.sqrt((path[i].x - path[i-1].x)**2 + (path[i].y - path[i-1].y)**2),
-                    xCenter = (path[i].x + path[i-1].x)/2,
-                    yCenter = (path[i].y + path[i-1].y)/2,
-                    angle = Math.atan2(path[i].y - path[i-1].y, path[i].x - path[i-1].x);
+		xTile = app.terrain.tilemap.xWorldToTile( target.x );
+		yTile = app.terrain.tilemap.yWorldToTile( target.y );
 
-                let rope = connection(xCenter, yCenter, length, angle),
-                    pole = box(path[i].x, path[i].y),
+		let map = app.terrain.tilemap.pointToTilemap( target.x, target.y, this.entity.radius ),
+			tiles = [];
 
-                    ticker = setInterval(() => {
-                        rope.material.opacity -= 0.01;
-                        pole.material.opacity -= 0.01;
+		for ( let x = map.left; x < map.width + map.left; x ++ )
+			for ( let y = map.top; y < map.height + map.top; y ++ )
+				tiles.push( app.terrain.tilemap.grid[ xTile + x ][ yTile + y ] );
 
-                        if (rope.material.opacity <= 0) {
-                            app.graphic.scene.remove(rope);
-                            app.graphic.scene.remove(pole);
-                            clearInterval(ticker);
-                        }
+		let path = app.terrain.tilemap.path( this.entity, target );
 
-                    }, 20);
+		path[ 0 ].start = syncProperty.time;
+		for ( let i = 1; i < path.length; i ++ ) {
 
-                rope.material.transparent = true;
-                pole.material.transparent = true;
+			let distance = Math.sqrt( ( path[ i ].x - path[ i - 1 ].x ) ** 2 + ( path[ i ].y - path[ i - 1 ].y ) ** 2 );
 
-            }
-        }
+			path[ i - 1 ].distance = distance;
+			path[ i - 1 ].xDistance = path[ i ].x - path[ i - 1 ].x;
+			path[ i - 1 ].yDistance = path[ i ].y - path[ i - 1 ].y;
+			path[ i - 1 ].duration = distance / this.movementSpeed * 1000;
+			path[ i - 1 ].angle = Math.atan2( path[ i ].y - path[ i - 1 ].y, path[ i ].x - path[ i - 1 ].x );
+			path[ i - 1 ].end = path[ i - 1 ].start + path[ i - 1 ].duration;
+			path[ i ].start = path[ i - 1 ].end;
 
-    }
+		}
 
-    update() {
+		return path;
+
+	}
+
+	update() {
 
         // console.log("Walk.update", syncProperty.time, this.entity.x);
-        if (this.entity.mesh) {
-            let x = this.entity.x,
-                oldX = this.entity.mesh.position.x,
-                deltaX = Math.abs(oldX - x),
+		if ( this.entity.mesh ) {
 
-                y = this.entity.y,
-                oldY = this.entity.mesh.position.y,
-                deltaY = Math.abs(oldY - y);
+			let x = this.entity.x,
+				// x2 = this.entity.mesh.position.x,
+				y = this.entity.y,
+				// y2 = this.entity.mesh.position.y,
+				// delta = ( ( x - x2 ) ** 2 + ( y - y2 ) ** 2 ) ** 0.5,
+				changes = 2;
 
-            if (deltaX > 256 || deltaX < 2) {
+			if ( this.entity.mesh.position.x === x && this.entity.mesh.position.y === y ) {
 
-                // if (deltaX > 256) console.log("jumpX");
-                if (deltaX !== 0) {
-                    this.entity.animate("walk");
-                } else {
-                    // this.entity.animate("idle");
-                    this.entity.animate("walk", 0);
-                }
+				changes --;
+				this.entity.animate( "idle" );
 
-                this._smoothing = 0.1;
-                this._lastSmoothed = false;
-                this.entity.mesh.position.x = x;
+			} else
+                this.entity.animate( "walk" );
 
-            } else {
+			this.entity.mesh.position.x = x;
+			this.entity.mesh.position.y = y;
 
-                if (this._lastSmoothed) this._smoothing = Math.max(this._smoothing * 1.2, 1);
-                this._lastSmoothed = true;
-                // console.log("smoothX", this._smoothing);
-                this.entity.mesh.position.x = oldX * (1-this._smoothing) + x * this._smoothing;
-            }
+			this.entity.mesh.rotation.z = this.heading;
 
-            if (deltaY > 256 || deltaY < 2) {
-                // if (deltaY > 256) console.log("jumpY");
-                this.entity.mesh.position.y = y;
-            } else {
-                // console.log("smoothY");
-                this.entity.mesh.position.y = oldY * (1-this._smoothing) + y * this._smoothing;
-            }
+			const height = app.terrain.groundHeight( this.entity.mesh.position.x, this.entity.mesh.position.y ),
+				heightDelta = height - this.entity.mesh.position.z;
 
-            if (this.entity.mesh.rotation.z > this.heading)
-                this.entity.mesh.rotation.z = Math.max(this.entity.mesh.rotation.z - this.turnSpeed, this.heading) || this.heading;
+			if ( Math.abs( heightDelta ) > 0.01 ) {
 
-            else
-                this.entity.mesh.rotation.z = Math.min(this.entity.mesh.rotation.z + this.turnSpeed, this.heading) || this.heading;
+                // Height smoothing is required because shit is bumpy otherwise
+				this.entity.mesh.position.z = this.entity.mesh.position.z * 0.7 + height * 0.3;
+				changes --;
 
-            // console.log(this.entity.mesh.position.z, app.terrain.groundHeight(this.entity.mesh.position.x, this.entity.mesh.position.y));
-            this.entity.mesh.position.z = this.entity.mesh.position.z * 0.7 + app.terrain.groundHeight(this.entity.mesh.position.x, this.entity.mesh.position.y) * 0.3;
+				// if ( delta ) {
+                //
+				// 	const angle = Math.atan( - heightDelta / delta );
+				// 	// console.log( heightDelta, delta, angle );
+				// 	this.entity.mesh.rotation.y = this.entity.mesh.rotation.y * 0.4 + Math.sin( angle ) * 0.2;
+				// 	this.entity.mesh.rotation.x = this.entity.mesh.rotation.x * 0.4 + Math.cos( angle ) * 0.2;
+                //
+				// }
 
-            if (this.entity.selection) {
-                this.entity.selection.selectionCircle.mesh.position.x = this.entity.mesh.position.x;
-                this.entity.selection.selectionCircle.mesh.position.y = this.entity.mesh.position.y;
-                this.entity.selection.selectionCircle.mesh.position.z = this.entity.mesh.position.z;
-            }
+			}
 
-            // console.log(app.terrain.groundHeight(this.entity.mesh.position.x, this.entity.mesh.position.y));
-            // if (Math.abs(oldX - this.entity.mesh.position.x) + Math.abs(oldY - this.entity.mesh.position.y) > 3)
-            //     console.log(this._lastSmoothed, Math.abs(oldX - this.entity.mesh.position.x), Math.abs(oldY - this.entity.mesh.position.y), this._smoothing);
+			if ( this.entity.selection ) {
 
-            // this.entity.mesh.rotation.z = this.entity.mesh.rotation.z * 0.8 + this.heading * 0.2;
+				this.entity.selection.selectionCircle.mesh.position.x = this.entity.mesh.position.x;
+				this.entity.selection.selectionCircle.mesh.position.y = this.entity.mesh.position.y;
+				this.entity.selection.selectionCircle.mesh.position.z = this.entity.mesh.position.z;
 
-        }
-        // if (this.entity.mesh) this.entity.mesh.y = this.entity.y;
-    }
+			}
+
+			if ( changes === 0 ) this.active = false;
+
+		}
+
+	}
 
 }

@@ -1,20 +1,25 @@
 
+// eslint-disable-next-line no-unused-vars
 class CommandDeck extends EventEmitter2 {
-    constructor(props) {
-        super();
 
-        this.cards = [];
+	constructor( /* props */ ) {
 
-        this.active = false;
+		super();
 
-    }
+		this.cards = [];
 
-    add(props) {
+		this.active = false;
 
-        this.cards.push({
-            icon: props.icon || props.type.icon,
-            hotkey: props.hotkey || props.type.hotkey
-        })
+	}
 
-    }
+	add( props ) {
+
+		this.cards.push( {
+			icon: props.icon || props.type.icon,
+			hotkey: props.hotkey || props.type.hotkey,
+			action: props.action || props.type.action
+		} );
+
+	}
+
 }

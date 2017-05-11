@@ -1,54 +1,63 @@
 
+/* globals Behavior */
+
+// eslint-disable-next-line no-unused-vars
 class Animated extends Behavior {
-    constructor(props) {
-        super(props);
 
-        this.entity.mesh = new THREE.SkinnedMesh(this.entity.geometry, this.entity.material);
-        this.entity.mesh.material.skinning = true;
+	constructor( props ) {
 
-        this.mixer = new THREE.AnimationMixer(this.entity.mesh);
+		super( props );
 
-        this.animations = {};
+		this.entity.mesh = new THREE.SkinnedMesh( this.entity.geometry, this.entity.material );
+		this.entity.mesh.material.skinning = true;
 
-        for (let i = 0; i < this.entity.geometry.animations.length; i++) {
-            let animation = this.entity.geometry.animations[i];
+		this.mixer = new THREE.AnimationMixer( this.entity.mesh );
 
-            this.animations[animation.name] = animation;
-            this.mixer.clipAction(animation);
+		this.animations = {};
 
-            animation.play = weight => this.animate(animation.name, weight);
+		for ( let i = 0; i < this.entity.geometry.animations.length; i ++ ) {
 
-        }
+			let animation = this.entity.geometry.animations[ i ];
 
-        this.entity.animate = (animation, weight) => this.animate(animation, weight);
-        this.entity.setAnimationSpeed =
-            (animation, speed) => this.setAnimationSpeed(animation, speed);
+			this.animations[ animation.name ] = animation;
+			this.mixer.clipAction( animation );
 
-        this.active = true;
+			animation.play = weight => this.animate( animation.name, weight );
 
-    }
+		}
 
-    update(delta) {
-        this.mixer.update(delta);
-    }
+		this.entity.animate = ( animation, weight ) => this.animate( animation, weight );
+		this.entity.setAnimationSpeed =
+            ( animation, speed ) => this.setAnimationSpeed( animation, speed );
 
-    animate(animation, weight = 1) {
+		this.active = true;
 
-        let remaining = 1 - weight,
-            action = this.mixer.clipAction(animation);
+	}
 
-        if (action.getEffectiveWeight() === weight) return;
+	update( delta ) {
 
-        for (let i = 0; i < this.animations.length; i++)
-            this.mixer.clipAction(this.animations[i].name).setEffectiveWeight(remaining);
+		this.mixer.update( delta );
 
-        action.setEffectiveWeight(weight).play();
+	}
 
-    }
+	animate( animation, weight = 1 ) {
 
-    setAnimationSpeed(animation, speed) {
+		let remaining = 1 - weight,
+			action = this.mixer.clipAction( animation );
 
-        this.mixer.clipAction(animation).setEffectiveTimeScale(speed);
+		if ( action.getEffectiveWeight() === weight ) return;
 
-    }
+		for ( let i = 0; i < this.animations.length; i ++ )
+			this.mixer.clipAction( this.animations[ i ].name ).setEffectiveWeight( remaining );
+
+		action.setEffectiveWeight( weight ).play();
+
+	}
+
+	setAnimationSpeed( animation, speed ) {
+
+		this.mixer.clipAction( animation ).setEffectiveTimeScale( speed );
+
+	}
+
 }

@@ -1,142 +1,173 @@
 
+/* globals FILTER, Unit, app */
+
+// eslint-disable-next-line no-unused-vars
 class Mouse extends EventEmitter2 {
-    constructor() {
-        super();
-        this.setMaxListeners(0);
 
-        this.filter = FILTER.UNITS;
-        this.intersection = null;
+	constructor() {
 
-        this.interaction = [
-            [{filter: entity => entity instanceof Unit, callback: intersect => this.select(intersect)}],
-            [{filter: () => false}],
-            [{filter: () => false}]
-        ];
+		super();
+		this.setMaxListeners( 0 );
 
-        document.addEventListener("mousemove", e => this.onMouseMove(e));
-        document.addEventListener("mousedown", e => this.onMouseDown(e));
-        document.addEventListener("mouseup", e => this.onMouseUp(e));
-    }
+		this.filter = FILTER.UNITS;
+		this.intersection = null;
 
-    onMouseMove(e) {
+		this.interaction = [
+            [ { filter: entity => entity instanceof Unit, callback: intersect => this.select( intersect ) } ],
+            [ { filter: () => false } ],
+            [ { filter: () => false } ]
+		];
+
+		document.addEventListener( "mousemove", e => this.onMouseMove( e ) );
+		document.addEventListener( "mousedown", e => this.onMouseDown( e ) );
+		document.addEventListener( "mouseup", e => this.onMouseUp( e ) );
+
+	}
+
+	onMouseMove( /* e */ ) {
 
         //Grab all objects the mouse intersects with
-        let intersects = this.intersects;
+		const intersects = this.intersects;
 
-        this.lastIntersects = intersects;
+		this.lastIntersects = intersects;
 
         // if (intersects.length > 0) console.log(intersects[0].point);
 
         //No intersection; we're in gray space
-        if (intersects.length === 0) {
+		if ( intersects.length === 0 ) {
 
             //If we had an intersection, alert hoverOff
-            if (this.lastIntersect)
-                this.lastIntersect.object.entity.emit("hoverOff", this.lastIntersect);
+			if ( this.lastIntersect )
+				this.lastIntersect.object.entity.emit( "hoverOff", this.lastIntersect );
 
             //We have none now
-            this.lastIntersect = null;
+			this.lastIntersect = null;
 
-            return;
+			return;
 
-        }
+		}
 
         //Grab the top-most intersection that matches the primary button filter (0, left)
-        let intersect = this.topIntersect(this.interaction[0]);
+		const intersect = this.topIntersect( this.interaction[ 0 ] );
 
         //We have no top-most intersection that matches the primary button filter, so alert hoverOff
-        if (!intersect) {
+		if ( ! intersect ) {
 
-            if (this.lastIntersect)
-                this.lastIntersect.object.entity.emit("hoverOff", this.lastIntersect);
+			if ( this.lastIntersect )
+				this.lastIntersect.object.entity.emit( "hoverOff", this.lastIntersect );
 
-            this.lastIntersect = null;
+			this.lastIntersect = null;
 
-            return;
+			return;
 
-        };
+		}
 
         //We had an intersection before...
-        if (this.lastIntersect) {
+		if ( this.lastIntersect ) {
 
             //New intersect
-            if (this.lastIntersect.object !== intersect.object)
-                this.lastIntersect.object.entity.emit("hoverOff", this.lastIntersect, intersect);
+			if ( this.lastIntersect.object !== intersect.object )
+				this.lastIntersect.object.entity.emit( "hoverOff", this.lastIntersect, intersect );
 
             //Old intersect
-            else if (this.lastIntersect.face !== intersect.face)
-                this.lastIntersect.object.entity.emit("hoverFace", this.lastIntersect, intersect);
+			else if ( this.lastIntersect.face !== intersect.face )
+				this.lastIntersect.object.entity.emit( "hoverFace", this.lastIntersect, intersect );
 
             //Comment out because the hover event is unlikely to be used
-            // else
-            //     this.lastIntersect.object.entity.emit("hover", this.lastIntersect, intersect);
+			else
+                this.lastIntersect.object.entity.emit( "hover", this.lastIntersect, intersect );
 
-            this.lastIntersect = intersect;
+			this.lastIntersect = intersect;
 
-            return;
+			return;
 
-        }
+		}
 
         //Alert hoverOn for new intersection
-        intersect.object.entity.emit("hoverOn", intersect);
+		intersect.object.entity.emit( "hoverOn", intersect );
 
-        this.lastIntersect = intersect;
+		this.lastIntersect = intersect;
 
-    }
+	}
 
-    topIntersect(interaction, filterIndex) {
+	topIntersect( interaction, filterIndex ) {
 
         // console.log(interaction, interaction[]);
 
         //No specific sub-action, check all
-        if (typeof filterIndex === "undefined") {
-            for (let i = 0; i < this.lastIntersects.length; i++)
-                for (let n = 0; n < interaction.length; n++) {
-                    if (!interaction[n].filter(this.lastIntersects[i].object.entity))
-                        continue;
+		if ( typeof filterIndex === "undefined" ) {
 
-                    this.topIntersectFilter = n;
+			for ( let i = 0; i < this.lastIntersects.length; i ++ )
+				for ( let n = 0; n < interaction.length; n ++ ) {
 
-                    return this.lastIntersects[i];
-                }
+					if ( ! interaction[ n ].filter( this.lastIntersects[ i ].object.entity ) )
+						continue;
 
-            return null;
-        }
+					this.topIntersectFilter = n;
+
+					return this.lastIntersects[ i ];
+
+				}
+
+			return null;
+
+		}
 
         //Looking at a specific sub-action, check it
-        for (let i = 0; i < this.lastIntersects.length; i++) {
-            if (!interaction[filterIndex].filter(this.lastIntersects[i].object.entity))
-                continue;
+		for ( let i = 0; i < this.lastIntersects.length; i ++ ) {
 
-            this.topIntersectFilter = filterIndex;
+			if ( ! interaction[ filterIndex ].filter( this.lastIntersects[ i ].object.entity ) )
+				continue;
 
-            return this.lastIntersects[i];
-        }
+			this.topIntersectFilter = filterIndex;
 
-        return null;
+			return this.lastIntersects[ i ];
 
-    }
+		}
 
-    onMouseDown(e) {
+		return null;
 
-        let intersect = this.topIntersect(this.interaction[e.button]);
-        if (intersect) this.interaction[e.button][this.topIntersectFilter].callback(intersect);
-        else console.error("Bad click!");
+	}
 
-    }
+	onMouseDown( e ) {
 
-    select(intersect) {
+		const intersect = this.topIntersect( this.interaction[ e.button ] );
+		if ( intersect ) this.interaction[ e.button ][ this.topIntersectFilter ].callback( intersect );
+		// else console.error( "Bad click!" );
 
-        this.selection = [intersect.object.entity];
-        this.emit("selection", this.selection);
+	}
 
-    }
+	select( intersect ) {
 
-    onMouseUp(e) {
+		this.selection = [ intersect.object.entity ];
+		this.emit( "selection", this.selection );
 
-    }
+	}
 
-    get intersects() {
-        return app.graphic.intersect();
-    }
+	onMouseUp( /* e */ ) {
+
+	}
+
+	get intersects() {
+
+		return app.graphic.intersect();
+
+	}
+
+	get x() {
+
+		const intersect = this.intersects[ 0 ];
+		if ( intersect ) return intersect.point.x;
+		return NaN;
+
+	}
+
+	get y() {
+
+		const intersect = this.intersects[ 0 ];
+		if ( intersect ) return intersect.point.y;
+		return NaN;
+
+	}
+
 }

@@ -1,0 +1,23 @@
+{
+  "name": "bulldog",
+  "version": "1.0.0",
+  "description": "Modeled after my WarCraft 3 map, this is a game of simple mechanics that spawn fun strategies. The game is made up of continuous rounds in which two teams are automatically generated. One team, the sheep, is has the sole goal of reaching the other side of the arena and they must do so within the time limit. The other team, the wolves, work to stop to sheep.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voces/bulldog.git"
+  },
+  "author": "verit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/voces/bulldog/issues"
+  },
+  "homepage": "https://github.com/voces/bulldog#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-mdcs": "^4.2.2"
+  }
+}
