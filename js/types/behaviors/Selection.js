@@ -12,16 +12,18 @@ class Selection extends Behavior {
 		this.entity.on( "hoverOff", intersect => this.onHoverOff( intersect ) );
 
 		app.mouse.on( "selection", entities =>
-            entities.indexOf( this.entity ) === - 1 ? this.deselect() : this.select() );
+            entities.indexOf( this.entity ) === - 1 ? this.deselect() : this.onSelection() );
 
 		props.entity.selection = this;
+
+		this.entity.select = () => this.select();
 
 	}
 
 	get selectionCircle() {
 
 		if ( this._selectionCircle ) return this._selectionCircle;
-		console.log( this.entity.constructor.name, this.entity.radius );
+
 		this._selectionCircle = new SelectionCircle( {
 			rgb: 0xFFFFFF,
 			x: this.entity.x,
@@ -53,6 +55,12 @@ class Selection extends Behavior {
 	}
 
 	select() {
+
+		app.mouse.select( { object: { entity: this.entity } } );
+
+	}
+
+	onSelection() {
 
 		if ( app.mouse.selection[ 0 ] === this.entity )
 			app.mouse.interaction = this.entity.interaction;

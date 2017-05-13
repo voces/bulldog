@@ -176,9 +176,21 @@ class Terrain extends Doodad {
 
 	groundHeight( x, y ) {
 
-		let tile = this.tilemap.grid[ this.tilemap.xWorldToTile( x ) ][ this.tilemap.yWorldToTile( y ) ],
-			pt = { x: x, y: y },
+		let tile,
+			pt = { x, y },
 			triangle;
+
+		{
+
+			const xTile = this.tilemap.xWorldToTile( x );
+			tile = this.tilemap.grid[ xTile ];
+			if ( ! xTile ) return NaN;
+
+			const yTile = this.tilemap.yWorldToTile( y );
+			tile = tile[ yTile ];
+			if ( ! yTile ) return NaN;
+
+		}
 
 		// if (this.myLastTile === tile) return;
 

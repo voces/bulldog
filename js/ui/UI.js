@@ -1,4 +1,6 @@
 
+/* globals app, TERRAIN */
+
 // eslint-disable-next-line no-unused-vars
 class UI {
 
@@ -15,8 +17,75 @@ class UI {
 		this.createResourceDisplay();
 		this.createCommandDeck();
 
-		window.addEventListener( "keyup", ( { key } ) =>
-			this.cards[ key ] && this.cards[ key ].onclick ? this.cards[ key ].onclick() : null );
+		window.addEventListener( "keyup", e => this.onKeyUp( e ) );
+		window.addEventListener( "keydown", e => this.onKeyDown( e ) );
+
+		this.keys = [];
+
+		setTimeout( () => {
+
+			if ( ! this.systemMouse ) this.systemMouse = app.graphic.mouse;
+			if ( ! this.systemCamera ) this.systemCamera = app.graphic.camera.position;
+			if ( ! this.factor ) this.factor = TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
+
+			app.graphic.updates.push( { update: delta => this.onUpdate( delta ) } );
+
+			// delta => {
+			//
+
+			//
+			// } } );
+
+		} );
+
+	}
+
+	onKeyUp( e ) {
+
+		const key = e.key;
+
+		this.keys[ key ] = false;
+
+		if ( this.cards[ key ] && this.cards[ key ].onclick )
+			this.cards[ key ].onclick();
+
+		if ( key === " " ) {
+
+			try {
+
+				this.systemCamera.x = 0;
+				this.systemCamera.y = - 160 * this.factor;
+
+			} catch ( err ) {}
+
+		}
+
+	}
+
+	onKeyDown( e ) {
+
+		const key = e.key;
+
+		this.keys[ key ] = true;
+
+	}
+
+	onUpdate( delta ) {
+
+		try {
+
+			if ( this.systemMouse.x > 0.975 ) this.systemCamera.x += delta / 3 * this.factor;
+			else if ( this.systemMouse.x < - 0.975 ) this.systemCamera.x -= delta / 3 * this.factor;
+
+			if ( this.systemMouse.y > 0.975 ) this.systemCamera.y += delta / 3 * this.factor;
+			else if ( this.systemMouse.y < - 0.975 ) this.systemCamera.y -= delta / 3 * this.factor;
+
+			if ( this.keys[ "ArrowRight" ] ) this.systemCamera.x += delta / 3 * this.factor;
+			if ( this.keys[ "ArrowLeft" ] ) this.systemCamera.x -= delta / 3 * this.factor;
+			if ( this.keys[ "ArrowUp" ] ) this.systemCamera.y += delta / 3 * this.factor;
+			if ( this.keys[ "ArrowDown" ] ) this.systemCamera.y -= delta / 3 * this.factor;
+
+		} catch ( err ) {}
 
 	}
 

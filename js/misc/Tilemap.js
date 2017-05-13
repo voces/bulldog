@@ -175,7 +175,7 @@ class Tilemap {
 
 		for ( let x = xTile + map.left; x < xTile + map.width + map.left; x ++ )
 			for ( let y = yTile + map.top; y < yTile + map.height + map.top; y ++, i ++ )
-				if ( this.grid[ x ][ y ].pathing & map.map[ i ] ) {
+				if ( this.grid[ x ] === undefined || this.grid[ x ][ y ] === undefined || ( this.grid[ x ][ y ].pathing & map.map[ i ] ) ) {
 
                     // console.log(x, y);
 					return false;
@@ -186,7 +186,10 @@ class Tilemap {
 
 	}
 
-	nearestPathing( x, y, entity ) {
+	nearestPathing( x, y, entity, sameLevel = false ) {
+
+		const originalX = x,
+			originalY = y;
 
 		let xTile = Math.floor( ( x + this.realWidth / 2 ) / TERRAIN.TILE_SIZE ),
 			yTile = this.height - Math.floor( ( y + this.realHeight / 2 ) / TERRAIN.TILE_SIZE ) - 1,
@@ -200,23 +203,42 @@ class Tilemap {
 			direction = xMiss < yMiss ? TERRAIN.TILE_SIZE - xMiss < yMiss ? 0 : 1 : TERRAIN.TILE_SIZE - xMiss < yMiss ? 3 : 2,
 			steps = 0,
 			stride = entity.structure ? 2 : 1,
-			initialSteps = 0;
+			initialSteps = 0,
+
+			heightMin = entity.mesh && entity.mesh.position.z - 16,
+			heightMax = entity.mesh && entity.mesh.position.z + 48,
+			attemptHeight,
+
+			remainingTries = 8192;
 
 		this.updateTilemap();
 
-		if ( entity.structure )
-			minimalTilemap = entity.tilemap;
-
-		else
-            minimalTilemap = this.pointToTilemap( entity.radius, entity.radius, entity.radius );
-
-        // console.log(minimalTilemap);
+		if ( entity.structure ) minimalTilemap = entity.tilemap;
+		else minimalTilemap = this.pointToTilemap( entity.radius, entity.radius, entity.radius );
 
 		let tried = [];
 		if ( this.grid[ xTile ] && this.grid[ xTile ][ yTile ] )
 			tried.push( this.grid[ xTile ][ yTile ] );
 
-		while ( ! this.pathable( minimalTilemap, xTile, yTile ) ) {
+		if ( sameLevel ) {
+
+			if ( minimalTilemap.width % 2 === 0 )
+				x = xTile * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+			else
+				x = ( xTile + 0.5 ) * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+
+			if ( minimalTilemap.height % 2 === 0 )
+				y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+			else
+				y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5 ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+
+			attemptHeight = Math.floor( app.terrain.groundHeight( x, y ) / 64 );
+
+		}
+
+		while ( ! this.pathable( minimalTilemap, xTile, yTile ) || ( sameLevel && ( attemptHeight < heightMin || attemptHeight > heightMax ) ) ) {
+
+			if ( ! remainingTries -- ) return { x: originalX, y: originalY };
 
 			switch ( direction ) {
 
@@ -238,45 +260,62 @@ class Tilemap {
 
 			} else steps --;
 
+			if ( sameLevel ) {
+
+				if ( minimalTilemap.width % 2 === 0 )
+					x = xTile * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+				else
+		            x = ( xTile + 0.5 ) * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+
+				if ( minimalTilemap.height % 2 === 0 )
+					y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+				else
+		            y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5 ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+
+				attemptHeight = app.terrain.groundHeight( x, y );
+
+			}
+
 		}
 
-        // let ticker = setInterval(() => {
-        //
-        //     let tile = tried.shift(),
-        //         fadeCount = 50;
-        //
-        //     tile.offsetHSL(0.5);
-        //
-        //     let innerTicker = setInterval(() => {
-        //
-        //         tile.offsetHSL(0.01);
-        //
-        //         if (!--fadeCount) clearInterval(innerTicker);
-        //
-        //     }, 40);
-        //
-        //     if (!tried.length) clearInterval(ticker);
-        //
-        // }, 10);
+		let ticker = setInterval( () => {
+
+			let tile = tried.shift(),
+				fadeCount = 50;
+
+			tile.offsetHSL( 0.5 );
+
+			let innerTicker = setInterval( () => {
+
+				tile.offsetHSL( 0.01 );
+
+				if ( ! -- fadeCount ) clearInterval( innerTicker );
+
+			}, 40 );
+
+			if ( ! tried.length ) clearInterval( ticker );
+
+		}, 10 );
 
         // console.log(minimalTilemap, this.pathable(minimalTilemap, xTile, yTile));
 
         // this.grid[xTile][yTile].offsetHSL(0.25);
 
-		if ( minimalTilemap.width % 2 === 0 )
-			x = xTile * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
-		else
-            x = ( xTile + 0.5 ) * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+		if ( ! sameLevel ) {
 
-		if ( minimalTilemap.height % 2 === 0 )
-			y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
-		else
-            y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5 ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+			if ( minimalTilemap.width % 2 === 0 )
+				x = xTile * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
+			else
+	            x = ( xTile + 0.5 ) * TERRAIN.TILE_SIZE - ( this.realWidth / 2 );
 
-		return {
-			x: x,
-			y: y
-		};
+			if ( minimalTilemap.height % 2 === 0 )
+				y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+			else
+	            y = ( - yTile - 1 + this.realHeight / TERRAIN.TILE_SIZE + 0.5 ) * TERRAIN.TILE_SIZE - this.realHeight / 2;
+
+		}
+
+		return { x, y };
 
 	}
 

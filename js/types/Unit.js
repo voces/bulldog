@@ -1,5 +1,5 @@
 
-/* globals Destructible, Walk, CommandDeck, FOOTPRINT_TYPE, NOT_BUILDABLE, app, FILTER, emitterMixin, Terrain, TYPES */
+/* globals Destructible, Walk, CommandDeck, FOOTPRINT_TYPE, NOT_BUILDABLE, app, FILTER, emitterMixin, Terrain, TYPES, syncProperty */
 
 class Unit extends Destructible {
 
@@ -46,6 +46,14 @@ class Unit extends Destructible {
 
 	seedBuildPlacement( type ) {
 
+		this.prevInteraction = app.mouse.interaction;
+
+		app.mouse.interaction = [
+			[ { filter: entity => entity instanceof Terrain, callback: intersect => this.buildAt( intersect ) } ],
+			[],
+			[ { filter: () => true, callback: () => this.cancelPlacement() } ]
+		];
+
 		if ( this.placingBuilding ) this.cancelPlacement();
 
 		this.placingBuilding = true;
@@ -55,14 +63,6 @@ class Unit extends Destructible {
 		this.terrainHoverListener = intersect => this.showPlacement( intersect );
 
 		app.terrain.on( "hover", this.terrainHoverListener );
-
-		this.prevInteraction = app.mouse.interaction;
-
-		app.mouse.interaction = [
-			[ { filter: entity => entity instanceof Terrain, callback: intersect => this.buildAt( intersect ) } ],
-			[],
-			[ { filter: () => true, callback: () => this.cancelPlacement() } ]
-		];
 
 	}
 
@@ -78,13 +78,31 @@ class Unit extends Destructible {
 
 		if ( app.terrain.tilemap.pathable( this.buildPlacement.tilemap, xTile, yTile ) ) {
 
-			this.buildPlacement.mesh.material.color.g = 1;
-			this.buildPlacement.mesh.material.color.b = 1;
+			if ( this.buildPlacement.mesh ) {
+
+				this.buildPlacement.mesh.material.color.g = 1;
+				this.buildPlacement.mesh.material.color.b = 1;
+
+			} else setTimeout( () => {
+
+				this.buildPlacement.mesh.material.color.g = 1;
+				this.buildPlacement.mesh.material.color.b = 1;
+
+			} );
 
 		} else {
 
-			this.buildPlacement.mesh.material.color.g = 0;
-			this.buildPlacement.mesh.material.color.b = 0;
+			if ( this.buildPlacement.mesh ) {
+
+				this.buildPlacement.mesh.material.color.g = 0;
+				this.buildPlacement.mesh.material.color.b = 0;
+
+			} else setTimeout( () => {
+
+				this.buildPlacement.mesh.material.color.g = 0;
+				this.buildPlacement.mesh.material.color.b = 0;
+
+			} );
 
 		}
 
@@ -122,22 +140,13 @@ class Unit extends Destructible {
 
 			this.cancelPlacement();
 
-			// const path = this.calcWalk( intersect.point );
-			//
-			// let buildDistanceLeft = this.buildDistance;
-			//
-			// while ( buildDistanceLeft )
-			//
-			// 	console.log( path );
-
-			// this.buildPlacement.ignore = false;
-			// app.dirtyEntities.push( this.buildPlacement );
-
 		} else console.error( "unable to build!" );
 
 	}
 
 	onBuild( { point, type } = {} ) {
+
+		this.purgeQueue();
 
 		type = TYPES[ type ];
 
@@ -147,26 +156,50 @@ class Unit extends Destructible {
 			y = shadowPlacement.y,
 
 			path = this.calcWalk( { x, y } ),
-			distanceLeft = this.buildDistance,
 			totalDistance = path.reduce( ( sum, { distance = 0 } = {} ) => sum + distance, 0 );
 
-		shadowPlacement.mesh.material.color.r = 0;
-		shadowPlacement.mesh.material.color.g = 0;
+		shadowPlacement.mesh.material.color.r = 0.5;
+		shadowPlacement.mesh.material.color.g = 0.5;
+		shadowPlacement.mesh.material.color.b = 2;
 
-		if ( totalDistance < distanceLeft ) {
+		if ( totalDistance < this.buildDistance ) {
 
 			shadowPlacement.remove();
 			new type( { x, y } );
+			const target = app.terrain.tilemap.nearestPathing( this.x, this.y, this, true );
+
+			this.x = target.x;
+			this.y = target.y;
 
 			return;
 
 		}
 
-		// let buildDistanceLeft = this.buildDistance;
-		//
-		// while ( buildDistanceLeft )
-		//
-		// 	console.log( path );
+		const target = path.pop(),
+			source = path.pop(),
+			angle = Math.atan2( source.y - target.y, source.x - target.x ),
+			newTarget = {
+				x: target.x + this.buildDistance * Math.cos( angle ),
+				y: target.y + this.buildDistance * Math.sin( angle )
+			},
+			newPath = this.calcWalk( newTarget ),
+			duration = newPath.reduce( ( sum, { duration = 0 } = {} ) => sum + duration, 0 );
+
+		this.doWalk( newPath );
+		this.queue( syncProperty.time + duration, err => {
+
+			shadowPlacement.remove();
+
+			if ( err ) return;
+
+			new type( { x, y } );
+			const target = app.terrain.tilemap.nearestPathing( this.x, this.y, this, true );
+
+			this.x = target.x;
+			this.y = target.y;
+			if ( this.mesh ) this.mesh.position.z = app.terrain.groundHeight( target.x, target.y );
+
+		} );
 
 	}
 
@@ -194,6 +227,21 @@ class Unit extends Destructible {
 	}
 
 }
+
+// function boxPoint( x, y, color ) {
+//
+// 	console.log( x, y );
+//
+// 	if ( typeof x !== "number" || isNaN( x ) || typeof y !== "number" || isNaN( y ) ) return;
+//
+// 	const box = new THREE.Mesh( new THREE.BoxBufferGeometry( 3, 3, 3 ), new THREE.MeshBasicMaterial( { color: color } ) );
+// 	box.position.x = x;
+// 	box.position.y = y;
+// 	box.position.z = app.terrain.groundHeight( x, y ) + 8;
+//
+// 	app.graphic.scene.add( box );
+//
+// }
 
 FILTER.UNITS = {
 	type: Unit

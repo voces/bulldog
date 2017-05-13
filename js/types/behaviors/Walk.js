@@ -17,6 +17,7 @@ class Walk extends Behavior {
 
 		this.entity.walk = point => this.walk( point );
 		this.entity.calcWalk = point => this.calcWalk( point );
+		this.entity.doWalk = point => this.doWalk( point );
 
 		this.entity.interaction[ 2 ].push( {
 			filter: entity => entity instanceof Terrain,
@@ -49,13 +50,19 @@ class Walk extends Behavior {
 
 	walk( point ) {
 
+		this.entity.purgeQueue();
+
 		app.ws.json( { id: "walk", point: point, entity: this.entity.id } );
 
 	}
 
 	onWalk( { point } ) {
 
-		const path = this.calcWalk( point );
+		this.doWalk( this.calcWalk( point ) );
+
+	}
+
+	doWalk( path ) {
 
 		let current = - 1;
 

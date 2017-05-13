@@ -1,133 +1,165 @@
 
 const ARENA_SMALL = 1,
-    ARENA_MEDIUM = 2,
-    ARENA_LARGE = 4,
-    ARENA_GIANT = 8,
+	ARENA_MEDIUM = 2,
+	ARENA_LARGE = 4,
+	ARENA_GIANT = 8,
 
-    ARENA_SMALL_MEDIUM = 3,
-    ARENA_MEDIUM_LARGE = 3,
-    ARENA_ALL = 15;
+	ARENA_SMALL_MEDIUM = 3,
+	ARENA_MEDIUM_LARGE = 3,
+	ARENA_ALL = 15;
 
-function equalChance(...outcomes) {
-    return outcomes[Math.floor(Math.random() * outcomes.length)];
+function equalChance( ...outcomes ) {
+
+	return outcomes[ Math.floor( Math.random() * outcomes.length ) ];
+
 }
 
 class Round extends EventEmitter2 {
-    constructor(game) {
-        super();
 
-        game.round = this;
+	constructor( game ) {
 
-        this.settings = game.settings;
-        this.players = [...app.players];
-        this.arena = game.arenas[this.settings.arena];
-        this.rng = game.rng;
+		super();
 
-        app.terrain = this.arena.terrain;
+		game.round = this;
 
-        this.arena.show();
+		this.settings = game.settings;
+		this.players = [ ...app.players ];
+		this.arena = game.arenas[ this.settings.arena ];
+		this.rng = game.rng;
+
+		app.terrain = this.arena.terrain;
+
+		this.arena.show();
 
         // if (this.settings.view) this.disableFogOfWar();
         // else this.enableFogOfWar();
 
-        this.pickTeams();
+		this.pickTeams();
 
-        this.playerActions();
+		this.playerActions();
 
         // this.spawnSheep();
         // this.spawnWolves();
 
-        this.wolfTimer = setTimeout(() => this.unfreezeWolves(), this.settings.freezeTime);
+		this.wolfTimer = setTimeout( () => this.unfreezeWolves(), this.settings.freezeTime );
 
-        this.incomeTicker = setInterval(() => this.income(), this.settings.income * 1000);
+		this.incomeTicker = setInterval( () => this.income(), this.settings.income * 1000 );
 
-    }
+	}
 
-    disableFogOfWar() { console.warn("Round.disableFogOfWar not yet implemented!"); }
-    enableFogOfWar() { console.warn("Round.enableFogOfWar not yet implemented!"); }
+	disableFogOfWar() {
 
-    pickTeams() {
+		console.warn( "Round.disableFogOfWar not yet implemented!" );
 
-        let pool = [...this.players];
+	}
+	enableFogOfWar() {
 
-        this.sheepTeam = [];
+		console.warn( "Round.enableFogOfWar not yet implemented!" );
+
+	}
+
+	pickTeams() {
+
+		let pool = [ ...this.players ];
+
+		this.sheepTeam = [];
 
         //Draft sheep with least plays until full
-        while (this.sheepTeam.length < this.settings.sheep) {
+		while ( this.sheepTeam.length < this.settings.sheep ) {
 
-            let minSheepPlays = Math.min(...pool.map(player => player.sheepPlays));
+			let minSheepPlays = Math.min( ...pool.map( player => player.sheepPlays ) );
 
-            let r = this.rng.randomInt(0, pool.length - 1);
+			let r = this.rng.randomInt( 0, pool.length - 1 );
 
-            if (pool[r].sheepPlays === minSheepPlays)
-                this.sheepTeam.push(pool.splice(r, 1)[0]);
+			if ( pool[ r ].sheepPlays === minSheepPlays )
+				this.sheepTeam.push( pool.splice( r, 1 )[ 0 ] );
 
-        }
+		}
 
-        this.wolfTeam = pool;
+		this.wolfTeam = pool;
 
-    }
+	}
 
-    playerActions() {
+	playerActions() {
 
-        for (let i = 0; i < this.sheepTeam.length; i++) {
+		for ( let i = 0; i < this.sheepTeam.length; i ++ ) {
 
-            this.sheepTeam[i].currency = this.settings.sheepStartingGold;
+			this.sheepTeam[ i ].currency = this.settings.sheepStartingGold;
 
-            let maxTries = 1000;
+			let maxTries = 1000;
 
-            while (maxTries--) {
+			while ( maxTries -- ) {
 
                 // console.log("try");
 
-                let x = this.rng.random() * (this.maxX - this.minX) + this.minX,
-                    y = this.rng.random() * (this.maxY - this.minY) + this.minY;
+				let x = this.rng.random() * ( this.maxX - this.minX ) + this.minX,
+					y = this.rng.random() * ( this.maxY - this.minY ) + this.minY;
 
-                if (this.arena.terrain.getTile(x, y) === 1) {
-                    new Sheep({x: x, y: y, owner: this.sheepTeam[i]});
-                    break;
-                }
+				if ( this.arena.terrain.getTile( x, y ) === 1 ) {
 
-            }
+					const sheep = new Sheep( { x, y, owner: this.sheepTeam[ i ] } );
+					sheep.select();
+					app.graphic.camera.position.x = x;
+					break;
 
-            if (maxTries === 0) console.error("Stage appears to be missing spawn area");
+				}
 
-        }
+			}
 
-    }
+			if ( maxTries === 0 ) console.error( "Stage appears to be missing spawn area" );
 
-    spawnWolves() {
+		}
 
-    }
+	}
 
-    unfreezeWolves() {
+	spawnWolves() {
 
-    }
+	}
 
-    generateSheepCount(playerCount) {
+	unfreezeWolves() {
 
-        if (playerCount === 1) return 1;
-        if (playerCount === 2) return 1;
-        if (playerCount === 4) return 2;
+	}
 
-        let half = Math.floor(playerCount / 2);
+	generateSheepCount( playerCount ) {
 
-        if (playerCount % 2 === 0) return equalChance(half+1, half, half-1);
+		if ( playerCount === 1 ) return 1;
+		if ( playerCount === 2 ) return 1;
+		if ( playerCount === 4 ) return 2;
 
-        return equalChance(half+1, half);
+		let half = Math.floor( playerCount / 2 );
 
-    }
+		if ( playerCount % 2 === 0 ) return equalChance( half + 1, half, half - 1 );
 
-    income() {
+		return equalChance( half + 1, half );
 
-        for (let i = 0; i < this.players.length; i++)
-            this.players[i].currency++;
+	}
 
-    }
+	income() {
 
-    get minX() { return this.arena.terrain.minX }
-    get maxX() { return this.arena.terrain.maxX }
-    get minY() { return this.arena.terrain.minY }
-    get maxY() { return this.arena.terrain.maxY }
+		for ( let i = 0; i < this.players.length; i ++ )
+			this.players[ i ].currency++;
+
+	}
+
+	get minX() {
+
+		return this.arena.terrain.minX;
+
+	}
+	get maxX() {
+
+		return this.arena.terrain.maxX;
+
+	}
+	get minY() {
+
+		return this.arena.terrain.minY;
+
+	}
+	get maxY() {
+
+		return this.arena.terrain.maxY;
+
+	}
 
 }

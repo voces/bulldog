@@ -45,6 +45,6 @@ Sheep.builds = [
 ];
 
 Sheep.movementSpeed = 95;
-Sheep.buildDistance = 16;
+Sheep.buildDistance = 16 * Math.sqrt( 2 );
 
 TYPES.Sheep = Sheep;

@@ -3,6 +3,37 @@
 
 if ( ! window.loader ) window.loader = new THREE.JSONLoader();
 
+// if ( ! window.binaryIndexOf )
+// 	window.binaryIndexOf = ( arr, searchElement, extractor ) => {
+//
+// 		let minIndex = 0,
+// 			maxIndex = arr.length - 1,
+// 			currentIndex,
+// 			searchValue = extractor ? extractor( searchElement ) : searchElement,
+// 			condition = element => {
+//
+// 				const value = extractor ? extractor( element ) : element;
+//
+// 				return value < searchValue ? 1 : value > searchValue ? - 1 : 0;
+//
+// 			};
+//
+// 		while ( minIndex <= maxIndex ) {
+//
+// 			currentIndex = ( minIndex + maxIndex ) / 2 | 0;
+//
+// 			const compareResult = condition( arr[ currentIndex ] );
+//
+// 			if ( compareResult === 1 ) minIndex = currentIndex + 1;
+// 			else if ( compareResult === - 1 ) maxIndex = currentIndex - 1;
+// 			else return currentIndex;
+//
+// 		}
+//
+// 		return - 1;
+//
+// 	};
+
 // eslint-disable-next-line no-unused-vars
 const TYPES = {};
 
@@ -52,6 +83,8 @@ class Doodad extends EventEmitter2 {
 
 		this.behaviors = [];
 		this.activeBehaviors = [];
+
+		this._queue = [];
 
 		this._dirty = true;
 
@@ -182,11 +215,75 @@ class Doodad extends EventEmitter2 {
 
 	}
 
+	queue( at, callback ) {
+
+		let index = this._queue.length;
+
+		while ( index && at < this._queue[ index - 1 ].at ) {
+
+			index --;
+			this._queue[ index ].callback( true );
+
+		}
+
+		if ( index !== this._queue.length )
+			this._queue.splice( index );
+
+		this._queue[ index ] = { at, callback };
+
+		if ( this.active !== true ) {
+
+			this.active = true;
+			this.emit( "active" );
+
+		}
+
+	}
+
+	purgeQueue( at = 0 ) {
+
+		let index = this._queue.length;
+
+		while ( index && at < this._queue[ index - 1 ].at ) {
+
+			index --;
+			this._queue[ index ].callback( true );
+
+		}
+
+		if ( index !== this._queue.length )
+			this._queue.splice( index );
+
+	}
+
 	update( delta ) {
 
-        // console.log("Doodad.update");
+		syncProperty.prediction = false;
+		let purgedQueues = 0;
+		for ( let i = 0; i < this._queue.length; i ++ )
+			if ( this._queue[ i ].at <= syncProperty.time ) {
+
+				const oldTime = syncProperty.time;
+				syncProperty.time = this._queue[ i ].at;
+				this._queue[ i ].callback( undefined );
+				syncProperty.time = oldTime;
+
+				purgedQueues ++;
+
+			} else break;
+		syncProperty.prediction = true;
+
+		if ( purgedQueues ) this._queue.splice( 0, purgedQueues );
+
 		for ( let i = 0; i < this.activeBehaviors.length; i ++ )
 			this.activeBehaviors[ i ].update( delta );
+
+		if ( this._queue.length === 0 && this.activeBehaviors.length === 0 ) {
+
+			this.active = false;
+			this.emit( "inactive" );
+
+		}
 
 	}
 

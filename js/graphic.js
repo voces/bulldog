@@ -27,8 +27,8 @@ class Graphic extends EventEmitter2 {
 		this.defaultScene = this.scene;
 
 		this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.01, 1000 );
-		this.camera.position.z = 300 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
-		this.camera.position.y = - 200 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
+		this.camera.position.z = 240 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
+		this.camera.position.y = - 160 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
         // this.camera.position.y = -0 * TERRAIN.TILE_PARTS * TERRAIN.TILE_SIZE / 16;
         // this.camera.position.x = -300;
         // this.camera.rotation.x = 0.93412;
